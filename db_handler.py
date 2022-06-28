@@ -120,3 +120,14 @@ if not path.exists(DB_NAME):
     create_tables()
     datos_iniciales()
     
+    
+# Consultas (SELECTS)
+
+@conexion_db
+def get_all_alumnos(db):
+    cursor = db.cursor()
+    sql = 'SELECT * FROM %s' % T_ALUMNOS
+    cursor.execute(sql)
+    elementos = cursor.fetchall()
+    print(elementos)
+    return elementos

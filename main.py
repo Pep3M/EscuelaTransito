@@ -1,5 +1,7 @@
 from tkinter import Button, Frame, Tk
 
+from funciones import init_multilist_alumnos
+
 
 root = Tk()
 root.title('Transito matriculas')
@@ -17,5 +19,7 @@ bt_new_matr.pack()
 
 tree_frame = Frame(body_frame, background='blue')
 tree_frame.pack(expand=True, fill='both', side='right')
+
+init_multilist_alumnos(tree_frame)
 
 root.mainloop()
