@@ -119,3 +119,4 @@ def datos_iniciales(db):
 if not path.exists(DB_NAME):
     create_tables()
     datos_iniciales()
+    
