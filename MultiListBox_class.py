@@ -11,11 +11,21 @@ class MultiColumnListbox(object):
     """use a ttk.TreeView as a multicolumn ListBox"""
 
 
-    def __init__(self, frame:tk.Frame, column_header, list: list):
+    def __init__(self, frame_container:tk.Frame, column_header, list: list):
+        """
+        Constructor de la clase MultiColumnListBox. Genera una lista con encabezados. Necesita un frame contenedor (tkinter), una lista de encabezado y una lista de tuplas, donde el largo de cada una es igual al largo de la lista de encabezado
+
+        Args:
+            frame_container (tk.Frame): Frame que contendra este objeto
+            column_header (list): Una lista de cada encabezado
+            list (list[tuple | list]): Una lista de tuplas. Cada tupla representa una fila
+        """
+        
         self.tree = None
-        self.frame = frame
+        self.frame = frame_container
         self.column_header = column_header
         self.list = list
+        
         self._setup_widgets()
         self._build_tree()
 
@@ -44,7 +54,7 @@ class MultiColumnListbox(object):
         self.tree = ttk.Treeview(columns=self.column_header, show="headings", style='Treeview')
        
         #si tenemos datos en columnas, mostrar las columnas q seran visibles
-        self.tree.config(height=30, displaycolumns=funciones.HEADER_LIST)
+        self.tree.config(height=30, displaycolumns=self.column_header)
         self.tree.pack(expand=True, fill='both')
 
         # scroll bars
@@ -76,7 +86,7 @@ class MultiColumnListbox(object):
             # adjust the column's width to the header string
             #self.tree.column(col, width=tkFont.Font().measure(col.title()), minwidth=100)
 
-            # ancho de columnas condicionales
+            # ancho de columnas condicionales (cambiar codigo por uno mas reutilizable)
             if i == 0:
                 self.tree.column(col, width=220)
             if i == 1:
@@ -130,8 +140,8 @@ class MultiColumnListbox(object):
         #try:
         id = self.tree.selection()[0]
         diccionario = self.tree.item(id)
-        texto = diccionario['values'][9]
-        abrirCarpeta(texto)
+        texto = diccionario['values'][2]
+        print(texto)
         #except IndexError:
             #print('No se ha selecionado ninguna fila, dobleclick no abrira ninguna carpeta')
 
@@ -159,11 +169,12 @@ class MultiColumnListbox(object):
         item = self.tree.item(item_selected)
         valoresItem = item['values']
 
-        self.actualizarFrameLateral(valoresItem)
+        print('Se selecciono',valoresItem)
     
 
     # -------------- Menu Contextual ------------
 
+    """ 
     def abrir(self):
         if self.idRow:
             self.tree.selection_set(self.idRow)
@@ -262,7 +273,7 @@ class MultiColumnListbox(object):
         self.mc.add_command(label='Corregir datos...', command=self.corregir_datos)
         self.mc.add_separator()
         self.mc.add_command(label='Eliminar', command=self.eliminar)
-    
+     """
     def do_popup(self, event):
         self.idRow = ''
         try:
@@ -282,7 +293,7 @@ class MultiColumnListbox(object):
         finally:
             self.mc.grab_release()
 
-    def actualizarFrameLateral(self, valoresItem:list):
+    """ def actualizarFrameLateral(self, valoresItem:list):
     
         NombFila = valoresItem[1]
         NombAltFila = valoresItem[2]
@@ -297,7 +308,7 @@ class MultiColumnListbox(object):
         FrameLateral.setNombre(self.frameLateral,texto=NombFila)
         FrameLateral.setNombreAlt(self.frameLateral,texto=NombAltFila)
         FrameLateral.setDescripcion(self.frameLateral,texto=descrFila)
-        FrameLateral.setCast(self.frameLateral,texto=castFila)   
+        FrameLateral.setCast(self.frameLateral,texto=castFila) """   
     
     def getIdsSelected(self):
         indexes = [self.tree.index(idx) for idx in self.tree.selection()]
