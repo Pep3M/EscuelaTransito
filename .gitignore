@@ -1,3 +1,5 @@
 venv/
 export/
 __pycache__/
+borradores/
+.vscode/
