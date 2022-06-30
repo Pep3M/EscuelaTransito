@@ -33,8 +33,9 @@ def create_tables(db):
     CREATE TABLE IF NOT EXISTS %s (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         %s VARCHAR(30),
+        %s INTEGER,
         %s VARCHAR(100))
-    ''' % (T_CURSOS, NOMBRE_CURSO, DATOS)
+    ''' % (T_CURSOS, NOMBRE_CURSO, MATRICULA_INIT, DATOS)
     db.cursor().execute(sql)
     
     # TABLA HORARIOS
