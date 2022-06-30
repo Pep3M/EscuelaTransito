@@ -7,9 +7,10 @@ from db_constantes import *
 def conexion_db(func):
     def wrapper(*args, **kwargs):
         db = connect('db.sqlite3')
-        func(db=db)
+        f = func(db=db)
         db.commit()
         db.close()
+        return f
     return wrapper
 
 
@@ -127,8 +128,16 @@ if not path.exists(DB_NAME):
 @conexion_db
 def get_all_alumnos(db):
     cursor = db.cursor()
-    sql = 'SELECT * FROM %s' % T_ALUMNOS
+    sql = 'SELECT %s, %s, %s, %s, %s FROM %s' % (FULL_NAME, CI, MUNICIPIO, TELEFONO, DATOS, T_ALUMNOS)
     cursor.execute(sql)
     elementos = cursor.fetchall()
-    print(elementos)
     return elementos
+
+@conexion_db
+def get_municipios(db):
+    cursor = db.cursor()
+    sql = 'SELECT %s FROM %s;' % (MUNICIPIO, T_MUNICIPIOS)
+    cursor.execute(sql)
+    elementos = cursor.fetchall()
+    municipios = [elemento[0] for elemento in elementos]
+    return municipios
