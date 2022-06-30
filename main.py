@@ -1,5 +1,5 @@
 from tkinter import Button, Frame, Tk, Toplevel
-from db_handler import get_horarios, get_municipios
+from db_handler import get_all_cat_code, get_horarios, get_municipios
 from funciones import init_multilist_alumnos
 from tkform_new_matr import Form_new_matric
 
@@ -13,8 +13,9 @@ def agregar_matricula():
 
     municipios = get_municipios()
     horarios = get_horarios()
+    cat_code = get_all_cat_code()
 
-    form = Form_new_matric(top, municipios, horarios)
+    form = Form_new_matric(top, municipios, horarios, cat_code)
     
     top.mainloop()
     
