@@ -37,3 +37,14 @@ ID_CURSO = 'id_curso'
 ID_ALUMNO = 'id_alumno'
 ID_CATEGORIA_LIC = 'id_categoria_lic'
 ID_HORARIO = 'id_horario'
+
+KEY_MATRICULAS = [
+    'id',
+    FECHA,
+    MATRICULA,
+    ID_CURSO,
+    ID_ALUMNO,
+    ID_CATEGORIA_LIC,
+    ID_HORARIO,
+    DATOS
+]

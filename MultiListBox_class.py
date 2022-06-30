@@ -5,6 +5,7 @@ with adjustable column width and column-header-click sorting.
 from tkinter import END, messagebox
 import tkinter as tk
 import tkinter.ttk as ttk
+import tkinter.font as tkFont
 
 
 class MultiColumnListbox(object):
@@ -84,10 +85,10 @@ class MultiColumnListbox(object):
                               command=lambda c=col: sortby(self.tree, c, 0))
 
             # adjust the column's width to the header string
-            #self.tree.column(col, width=tkFont.Font().measure(col.title()), minwidth=100)
+            self.tree.column(col, width=tkFont.Font().measure(col.title()), minwidth=100)
 
             # ancho de columnas condicionales (cambiar codigo por uno mas reutilizable)
-            if i == 0:
+            """ if i == 0:
                 self.tree.column(col, width=220)
             if i == 1:
                 self.tree.column(col, width=220)
@@ -104,7 +105,7 @@ class MultiColumnListbox(object):
             if i == 7:
                 self.tree.column(col, width=60)
             if i == 8:
-                self.tree.column(col, width=60)
+                self.tree.column(col, width=60) """
 
         # Para crear una cebra, actualmente se borra al escribir
         self.tree.tag_configure('dark', background='#252525', foreground='white')

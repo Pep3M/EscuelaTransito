@@ -70,17 +70,21 @@ def create_tables(db):
     db.cursor().execute(sql)
 
     # TABLA MATRICULAS
-    sql = '''
-    CREATE TABLE IF NOT EXISTS %s (
+    sql = f'''
+    CREATE TABLE IF NOT EXISTS {T_MATRICULAS} (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        %s VARCHAR(20),
-        %s INTEGER UNIQUE,
-        %s INTEGER,
-        %s INTEGER,
-        %s INTEGER,
-        %s INTEGER,
-        %s VARCHAR(200))
-    ''' % (T_MATRICULAS, FECHA, MATRICULA, ID_CURSO, ID_ALUMNO, ID_CATEGORIA_LIC, ID_HORARIO, DATOS)
+        {FECHA} VARCHAR(20),
+        {MATRICULA} INTEGER UNIQUE,
+        {ID_CURSO} INTEGER,
+        {ID_ALUMNO} INTEGER,
+        {ID_CATEGORIA_LIC} INTEGER,
+        {ID_HORARIO} INTEGER,
+        {DATOS} VARCHAR(200),
+        FOREIGN KEY ({ID_CURSO}) REFERENCES {T_CURSOS}('id'),
+        FOREIGN KEY ({ID_ALUMNO}) REFERENCES {T_ALUMNOS}('id'),
+        FOREIGN KEY ({ID_CATEGORIA_LIC}) REFERENCES {T_CATEGORIA_LIC}('id'), 
+        FOREIGN KEY ({ID_HORARIO}) REFERENCES {T_HORARIOS}('id'))
+    '''
     db.cursor().execute(sql)
 
 
@@ -128,7 +132,7 @@ def datos_iniciales(db):
 if not path.exists(DB_NAME):
     create_tables()
     datos_iniciales()
-
+create_tables()
 
 # Consultas (SELECTS)
 
@@ -194,15 +198,36 @@ def get_horarios(db: Connection):
 
 
 @conexion_db
-def get_last_cursor(db: Connection):
+def get_last_curso_id(db: Connection):
     cursor = db.cursor()
     sql = '''
     SELECT %s FROM %s ORDER BY %s,%s DESC LIMIT 1;
-    ''' % (NOMBRE_CURSO, T_CURSOS, NOMBRE_CURSO, YEAR)
+    ''' % ('id', T_CURSOS, NOMBRE_CURSO, YEAR)
 
     cursor.execute(sql)
 
     return cursor.fetchone()[0]
+
+
+
+def get_idcurso_by_curso_year(curso, year):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+    
+    sql = '''
+    SELECT id FROM %s WHERE %s=? AND %s=?
+    ''' % (T_CURSOS, NOMBRE_CURSO, YEAR)
+    param = [curso,year]
+    
+    cursor.execute(sql, param)
+    fetch = cursor.fetchone()
+    db.close()
+    
+    if fetch: id = fetch[0]
+    else: id = 0
+    
+    return id
+
 
 
 @conexion_db
@@ -228,7 +253,6 @@ def get_id_cat(categoria_code):
     db.close()
     return id
 
-
 def get_id_horario(horario):
     db = connect(DB_NAME)
     cursor = db.cursor()
@@ -240,6 +264,103 @@ def get_id_horario(horario):
     id = cursor.fetchone()[0]
     db.close()
     return id
+
+
+def get_curso_by_id(id):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+    
+    sql = '''
+    SELECT %s FROM %s WHERE id=?
+    ''' % (NOMBRE_CURSO, T_CURSOS)
+    param = [id]
+    
+    cursor.execute(sql, param)
+    fetch = cursor.fetchone()
+    db.close()
+    
+    if fetch: nombre = fetch[0]
+    else: nombre = ''
+    
+    return nombre
+    
+def get_alumno_by_id(id):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+    
+    sql = '''
+    SELECT %s,%s,%s FROM %s WHERE id=?
+    ''' % (FULL_NAME, CI, TELEFONO, T_ALUMNOS)
+    param = [id]
+    
+    cursor.execute(sql, param)
+    fetch = cursor.fetchone()
+    db.close()
+    
+    return fetch
+
+def get_categoria_by_id(id):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+    
+    sql = '''
+    SELECT %s,%s FROM %s WHERE id=?
+    ''' % (CODIGO_CAT, NOMBRE_CAT, T_CATEGORIA_LIC)
+    param = [id]
+    
+    cursor.execute(sql, param)
+    fetch = cursor.fetchone()
+    db.close()
+    
+    return fetch
+
+def get_horario_by_id(id):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+    
+    sql = '''
+    SELECT %s,%s FROM %s WHERE id=?
+    ''' % (HORARIO, DATOS, T_HORARIOS)
+    param = [id]
+    
+    cursor.execute(sql, param)
+    fetch = cursor.fetchone()
+    db.close()
+    
+    return fetch
+
+""" 
+def get_matriculas_by_curso_year(curso, year=2022):
+    id_curso = get_idcurso_by_curso_year(curso,year)
+    
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+    
+    sql = '''
+    SELECT * FROM %s WHERE %s=?;
+    ''' % (T_MATRICULAS, ID_CURSO)
+    param = [id_curso]
+    
+    cursor.execute(sql, param)
+    fetch = cursor.fetchall()
+    db.close()
+    
+    if fetch: 
+        matriculas = []
+        key_extended = KEY_MATRICULAS.extend([FULL_NAME, CODIGO_CAT, HORARIO])
+        for tupla in fetch:
+            tupla = list(tupla)
+            tupla.append(get_alumno_by_id(tupla[4])[0])
+            tupla.append(get_categoria_by_id(tupla[5])[1])
+            tupla.append(get_horario_by_id(tupla[6])[0])
+            matriculas.append(dict(zip(key_extended, tupla)))
+        
+        return matriculas
+    else:
+        return False
+
+print(get_matriculas_by_curso_year(10))
+ """
 
 
 # INSERTS
@@ -286,9 +407,10 @@ def agregar_matricula(datos_matricula: list):
     INSERT OR IGNORE INTO %s (%s,%s,%s,%s,%s,%s)
     VALUES (?,?,?,?,?,?)
     ''' % (T_MATRICULAS, FECHA, ID_CURSO, ID_ALUMNO, ID_CATEGORIA_LIC, ID_HORARIO, DATOS)
-    param = [str(datetime.now())[0:10], get_last_cursor(), id_alumno, get_id_cat(
+    
+    param = [str(datetime.now())[0:10], get_last_curso_id(), id_alumno, get_id_cat(
         categoria), get_id_horario(horario), datos]
-
+    
     cursor.execute(sql, param)
     db.commit()
     db.close()
