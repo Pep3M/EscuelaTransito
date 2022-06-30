@@ -1,6 +1,7 @@
 from os import path
-from sqlite3 import connect
+from sqlite3 import Connection, connect
 from db_constantes import *
+from datetime import datetime
 
 
 # Decorador, para las conexiones a la DB
@@ -126,12 +127,43 @@ if not path.exists(DB_NAME):
 # Consultas (SELECTS)
 
 @conexion_db
-def get_all_alumnos(db):
+def get_all_alumnos(db:Connection):
     cursor = db.cursor()
     sql = 'SELECT %s, %s, %s, %s, %s FROM %s' % (FULL_NAME, CI, MUNICIPIO, TELEFONO, DATOS, T_ALUMNOS)
     cursor.execute(sql)
     elementos = cursor.fetchall()
     return elementos
+
+
+def select_alumno_by_ci(ci):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+    
+    sql = 'SELECT %s, %s, %s, %s, %s FROM %s WHERE %s=?' % (FULL_NAME, CI, MUNICIPIO, TELEFONO, DATOS, T_ALUMNOS, CI)
+    param = [ci]
+    
+    cursor.execute(sql,param)
+    elementos = cursor.fetchall()
+    
+    db.close()
+    return elementos
+
+
+def get_id_alumno_by_ci(ci):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+    
+    sql2 = '''
+    SELECT id FROM %s WHERE %s=? LIMIT 1
+    ''' % (T_ALUMNOS, CI)
+    param2 = [ci]
+    
+    cursor.execute(sql2, param2)
+    id_alumno = int(cursor.fetchone()[0])
+    
+    db.close()
+    return id_alumno
+
 
 @conexion_db
 def get_municipios(db):
@@ -141,3 +173,63 @@ def get_municipios(db):
     elementos = cursor.fetchall()
     municipios = [elemento[0] for elemento in elementos]
     return municipios
+
+
+@conexion_db
+def get_horarios(db:Connection):
+    cursor = db.cursor()
+    sql = 'SELECT %s FROM %s;' % (HORARIO, T_HORARIOS)
+    cursor.execute(sql)
+    elementos = cursor.fetchall()
+    municipios = [elemento[0] for elemento in elementos]
+    return municipios
+
+
+# INSERTS
+
+def agregar_alumno(datos_alumno):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+    
+    sql = '''
+    INSERT OR IGNORE INTO %s (%s,%s,%s,%s,%s)
+    VALUES (?,?,?,?,?)
+    ''' % (T_ALUMNOS,FULL_NAME, CI, MUNICIPIO, TELEFONO, DATOS)
+    
+    cursor.execute(sql, datos_alumno)
+    
+    id_alumno = get_id_alumno_by_ci(datos_alumno[1])
+    
+    db.commit()
+    db.close()
+    
+    return id_alumno
+    
+
+def agregar_matricula(datos_matricula:list):
+    
+    nombre = datos_matricula[0]
+    ci = datos_matricula[1]
+    municipio = datos_matricula[2]
+    telefono = datos_matricula[3]
+    horario = datos_matricula[4]
+    datos = datos_matricula[5]
+
+    if not len(select_alumno_by_ci(ci)) > 0:
+        # agregar datos, sin el horario
+        agregar_alumno(datos_matricula.pop(4))
+        
+    id_alumno = get_id_alumno_by_ci()
+        
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+    
+    sql = '''
+    INSERT OR IGNORE INTO %s (%s,%s,%s,%s,%s)
+    VALUES (?,?,?,?,?)
+    ''' % (T_MATRICULAS,FECHA,ID_CURSO, ID_ALUMNO, MUNICIPIO, TELEFONO, DATOS)
+    
+
+#print(agregar_alumno(['Juan Pedro', '811232145765', 'Cerro', '53423245', '']))
+#print(select_alumno_by_ci(ci='811232145765'))
+#print(get_horarios())

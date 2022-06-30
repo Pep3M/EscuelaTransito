@@ -2,49 +2,50 @@
 from msilib.schema import ComboBox
 from tkinter import END, Button, Entry, Frame, Label, StringVar, Text, Tk
 from tkinter.ttk import Combobox
+from db_handler import agregar_matricula
 
 from db_handler import get_municipios
 
 
 class Form_new_matric:
     
-    def __init__(self, frame_container, municipios):
+    def __init__(self, frame_container, municipios, horarios):
         self.frame_container = frame_container
         self.guardar = []
         # labels
-        self.lb_matricula = Label(self.frame_container, text='# Matricula')
         self.lb_name = Label(self.frame_container, text='Nombre(s) y apellidos')
         self.lb_ci = Label(self.frame_container, text='Carnet de Identidad')
         self.lb_municipio = Label(self.frame_container, text='Municipio')
         self.lb_tel = Label(self.frame_container, text='Telefono')
+        self.lb_horario = Label(self.frame_container, text='Horario')
         self.lb_datos = Label(self.frame_container, text='Otros datos')
         # labels grid
-        self.lb_matricula.grid(row=0,column=0, sticky='w', pady=5, padx=10)
         self.lb_name.grid(row=1,column=0, sticky='w', pady=5, padx=10)
         self.lb_ci.grid(row=2,column=0, sticky='w', pady=5, padx=10)
         self.lb_municipio.grid(row=3,column=0, sticky='w', pady=5, padx=10)
         self.lb_tel.grid(row=4,column=0, sticky='w', pady=5, padx=10)
-        self.lb_datos.grid(row=5,column=0, sticky='wn', pady=5, padx=10)
+        self.lb_horario.grid(row=5,column=0, sticky='w', pady=5, padx=10)
+        self.lb_datos.grid(row=6,column=0, sticky='wn', pady=5, padx=10)
         
         # entrys
-        self.e_matricula = Entry(self.frame_container, width=4)
         self.e_name = Entry(self.frame_container, width=30)
         self.e_ci = Entry(self.frame_container, width=30)
         self.e_municipio = self.combobox(municipios, width=27)
         self.e_tel = Entry(self.frame_container, width=10)
+        self.e_horario = self.combobox(horarios, width=27)
         self.e_datos = Text(self.frame_container, width=22, height=4,)
         # entrys grid
-        self.e_matricula.grid(row=0,column=1, sticky='w', pady=5)
         self.e_name.grid(row=1,column=1, sticky='w', pady=5)
         self.e_ci.grid(row=2,column=1, sticky='w', pady=5)
         self.e_municipio.grid(row=3,column=1, sticky='w', pady=5)
         self.e_tel.grid(row=4,column=1, sticky='w', pady=5)
-        self.e_datos.grid(row=5,column=1, sticky='w', pady=5)
+        self.e_horario.grid(row=5,column=1, sticky='w', pady=5)
+        self.e_datos.grid(row=6,column=1, sticky='w', pady=5)
         
         self.e_name.focus_set()
     
         self.frame_bts = Frame(self.frame_container)
-        self.frame_bts.grid(row=6, column=1, sticky='e')
+        self.frame_bts.grid(row=7, column=1, sticky='e')
         
         self.bt_aceptar = Button(self.frame_bts, text='Agregar', command=self.aceptar)
         self.bt_aceptar.grid(row=0, column=0, padx=10, pady=10)
@@ -53,12 +54,15 @@ class Form_new_matric:
         
     
     def aceptar(self):
-        self.guardar.append(self.e_matricula.get())
         self.guardar.append(self.e_name.get())
         self.guardar.append(self.e_ci.get())
         self.guardar.append(self.e_municipio.get())
         self.guardar.append(self.e_tel.get())
+        self.guardar.append(self.e_horario.get())
         self.guardar.append(self.e_datos.get('1.0',END))
+        #metodo externo no reutilizable
+        agregar_matricula(self.guardar)
+        
         self.frame_container.destroy()
     
     def cancelar(self):
