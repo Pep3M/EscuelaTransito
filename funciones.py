@@ -22,7 +22,7 @@ def init_multilist_alumnos(frame_container):
 
 
 
-def init_multilist_matriculas(frame_container):
+def init_multilist_matriculas(frame_container, curso:str):
     header_matriculas = [
         'Nombre completo',
         'Carnet Identidad',
@@ -33,7 +33,9 @@ def init_multilist_matriculas(frame_container):
         'Otros datos',
     ]
     
-    id_curso = get_idcurso_by_curso_year(10,2022)
+    sc = curso.split('-')
+    
+    id_curso = get_idcurso_by_curso_year(sc[0],sc[1])
     matriculas_lista = get_view_matriculas_by_idcurso(id_curso)
     
     if not matriculas_lista:
@@ -46,7 +48,8 @@ def init_multilist_matriculas(frame_container):
 
 
 def actualizar_treeview(treeview:MultiColumnListbox):
-    id_curso = get_idcurso_by_curso_year(10,2022)
+    sc = treeview.curso.split('-')
+    id_curso = get_idcurso_by_curso_year(sc[0],sc[1])
     matriculas_lista = get_view_matriculas_by_idcurso(id_curso)
     
     if not matriculas_lista:

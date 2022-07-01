@@ -272,6 +272,19 @@ def get_idcurso_by_curso_year(curso, year):
 
     return id
 
+@conexion_db
+def get_cursos(db:Connection):
+    cursor = db.cursor()
+
+    sql = f'''
+    SELECT {NOMBRE_CURSO},{YEAR} FROM {T_CURSOS}
+    ORDER BY {NOMBRE_CURSO},{YEAR} DESC
+    '''
+    cursor.execute(sql)
+    fetch = cursor.fetchall()
+    if fetch: return fetch
+    else: return False
+
 
 @conexion_db
 def get_all_cat_code(db: Connection):
@@ -439,7 +452,7 @@ def actualizar_alumno(datos_alumno:list, old_ci):
     return id_alumno
 
 
-def agregar_matricula(datos_matricula: list):
+def agregar_matricula(datos_matricula: list, curso, year):
 
     nombre = datos_matricula[0]
     ci = datos_matricula[1]
@@ -448,6 +461,7 @@ def agregar_matricula(datos_matricula: list):
     horario = datos_matricula[4]
     datos = datos_matricula[5]
     categoria = datos_matricula[6]
+    id_curso = get_idcurso_by_curso_year(curso, year)
 
     if not len(select_alumno_by_ci(ci)) > 0:
         # agregar datos, sin el horario
@@ -464,7 +478,7 @@ def agregar_matricula(datos_matricula: list):
     VALUES (?,?,?,?,?,?)
     ''' % (T_MATRICULAS, FECHA, ID_CURSO, ID_ALUMNO, ID_CATEGORIA_LIC, ID_HORARIO, DATOS)
 
-    param = [str(datetime.now())[0:10], get_last_curso_id(), id_alumno, get_id_cat(
+    param = [str(datetime.now())[0:10], id_curso, id_alumno, get_id_cat(
         categoria), get_id_horario(horario), datos]
 
     cursor.execute(sql, param)
@@ -472,7 +486,7 @@ def agregar_matricula(datos_matricula: list):
     db.close()
 
 
-def actualizar_matricula(datos_matricula: list, old_ci):
+def actualizar_matricula(datos_matricula: list, old_ci, id_curso):
 
     nombre = datos_matricula[0]
     ci = datos_matricula[1]
@@ -496,11 +510,35 @@ def actualizar_matricula(datos_matricula: list, old_ci):
     WHERE {ID_ALUMNO}=? AND {ID_CURSO}=?;
     '''
 
-    param = [get_id_cat(categoria), get_id_horario(horario), datos, id_alumno, get_last_curso_id(db)]
+    param = [get_id_cat(categoria), get_id_horario(horario), datos, id_alumno, id_curso]
 
     cursor.execute(sql, param)
     db.commit()
     db.close()
+
+
+def eliminar_matr_by_ci_and_curso(ci, curso, year):
+    
+    id_curso = get_idcurso_by_curso_year(curso, year)
+    
+    id_alumno = get_id_alumno_by_ci(ci)
+    
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+
+    sql = f'''
+    DELETE FROM {T_MATRICULAS}
+    WHERE {ID_ALUMNO}=? AND {ID_CURSO}=?
+    '''
+    param = [id_alumno, id_curso]
+    
+    cursor.execute(sql, param)
+
+    db.commit()
+    db.close()
+    
+    
+    
 
 #actualizar_matricula(['Esteban Lopez Abreu', '54011231432', 'Centro Habana', '54321243', '9:00 AM - 11:00 AM', 'asdasd\n', 'A-1'],'540112314321')
 # print(select_alumno_by_ci(ci='811232145765'))

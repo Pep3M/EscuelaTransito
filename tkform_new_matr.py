@@ -75,7 +75,9 @@ class Form_new_matric:
             showerror('Faltan campos requerido','Compruebe que el campo "Nombre(s) y apellidos" y "Carnet de Identidad" esten correctamente llenados')
         else:
             #metodo externo no reutilizable
-            agregar_matricula(self.guardar)
+            sc = self.treeview.curso.split('-')
+            
+            agregar_matricula(self.guardar, sc[0],sc[1])
             
             self.frame_container.destroy()
             actualizar_treeview(self.treeview)

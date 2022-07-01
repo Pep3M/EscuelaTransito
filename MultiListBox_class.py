@@ -8,7 +8,7 @@ import tkinter.ttk as ttk
 import tkinter.font as tkFont
 
 
-from db_handler import actualizar_matricula, get_all_cat_code, get_horarios, get_last_curso_id, get_municipios, get_view_matriculas_by_idcurso
+from db_handler import actualizar_matricula, eliminar_matr_by_ci_and_curso, get_all_cat_code, get_cursos, get_horarios, get_idcurso_by_curso_year, get_last_curso_id, get_municipios, get_view_matriculas_by_idcurso
 
 
 class MultiColumnListbox(object):
@@ -25,6 +25,7 @@ class MultiColumnListbox(object):
         """
 
         self.tree = None
+        self.curso = '10-2022'  # inicial
         self.frame = frame_container
         self.column_header = column_header
         self.list = list
@@ -54,17 +55,17 @@ class MultiColumnListbox(object):
                                  show="headings",
                                  style='Treeview')
 
-        #si tenemos datos en columnas, mostrar las columnas q seran visibles
+        # si tenemos datos en columnas, mostrar las columnas q seran visibles
         self.tree.config(height=30, displaycolumns=self.column_header)
         self.tree.pack(expand=True, fill='both')
 
         # scroll bars
         vsb = ttk.Scrollbar(orient="vertical", command=self.tree.yview)
 
-        #hsb = ttk.Scrollbar(orient="horizontal",
+        # hsb = ttk.Scrollbar(orient="horizontal",
         #                    command=self.tree.xview)
         self.tree.configure(yscrollcommand=vsb.set
-                            #,xscrollcommand=hsb.set
+                            # ,xscrollcommand=hsb.set
                             )
 
         # ubicacion del tree dentro del frame contenedor
@@ -75,7 +76,7 @@ class MultiColumnListbox(object):
 
         container.grid_columnconfigure(0, weight=1)
         container.grid_rowconfigure(0, weight=1)
-        
+
         self.setupMenuContextual()
 
     def _build_tree(self):
@@ -119,7 +120,7 @@ class MultiColumnListbox(object):
         for item in self.list:
             color = 'dark' if cont % 2 == 0 else 'light'
             self.tree.insert('', 'end', values=item
-                             #, tags=('fuente',color)
+                             # , tags=('fuente',color)
                              )
 
             # ajustar el nivel de cada columna segun sus valores
@@ -140,16 +141,16 @@ class MultiColumnListbox(object):
 
     # Evento creado para cuando se de doble click en un item
     def on_double_click(self, event):
-        #try:
+        # try:
         id = self.tree.selection()[0]
         diccionario = self.tree.item(id)
         texto = diccionario['values'][2]
         print(texto)
-        #except IndexError:
+        # except IndexError:
         #print('No se ha selecionado ninguna fila, dobleclick no abrira ninguna carpeta')
 
     def change(self, list):
-        #borrar toda la lista para crear una nueva
+        # borrar toda la lista para crear una nueva
         for child in self.tree.get_children():
             self.tree.delete(child)
 
@@ -164,7 +165,8 @@ class MultiColumnListbox(object):
     def on_select_action(self, event):
 
         item_selected = self.tree.focus()
-        if not item_selected: return
+        if not item_selected:
+            return
 
         idx = self.tree.index(item_selected)
         item = self.tree.item(item_selected)
@@ -172,11 +174,8 @@ class MultiColumnListbox(object):
 
         print('Se selecciono', valoresItem)
 
-
-
     # -------------- Menu Contextual ------------
-    
-            
+
     def editar(self):
         if self.idRow:
             self.tree.selection_set(self.idRow)
@@ -193,25 +192,22 @@ class MultiColumnListbox(object):
             # ejecutando un toplevel para editar
             x = 100
             y = 100
-            
+
             top = Toplevel()
             w = 340
             h = 325
             top.geometry("%dx%d+%d+%d" % (w, h, x + 350, y + 150))
-            
-            top.title('Agregando matricula')
+
+            top.title('Editando matricula')
             top.attributes('-topmost', 'true')
 
             municipios = get_municipios()
             horarios = get_horarios()
             cat_code = get_all_cat_code()
-            
-            
+
             def check_required_fields():
                 return e_name.get() and e_ci.get()
-            
-            
-                    
+
             def aceptar():
                 guardar.clear()
                 guardar.append(e_name.get())
@@ -219,22 +215,25 @@ class MultiColumnListbox(object):
                 guardar.append(e_municipio.get())
                 guardar.append(e_tel.get())
                 guardar.append(e_horario.get())
-                guardar.append(e_datos.get('1.0',END))
+                guardar.append(e_datos.get('1.0', END))
                 guardar.append(e_categoria.get())
-                
+
                 if not check_required_fields():
-                    messagebox.showerror('Faltan campos requerido','Compruebe que el campo "Nombre(s) y apellidos" y "Carnet de Identidad" esten correctamente llenados')
+                    messagebox.showerror(
+                        'Faltan campos requerido', 'Compruebe que el campo "Nombre(s) y apellidos" y "Carnet de Identidad" esten correctamente llenados')
                 else:
-                    #metodo externo no reutilizable
-                    actualizar_matricula(guardar,ci)
-                    #print(guardar)
+                    # metodo externo no reutilizable
+                    sc = self.curso.split('-')
+                    id_curso = get_idcurso_by_curso_year(sc[0], sc[1])
+
+                    actualizar_matricula(guardar, ci, id_curso)
+                    # print(guardar)
                     top.destroy()
-                    self.change(get_view_matriculas_by_idcurso(get_last_curso_id()))
-            
+                    self.change(get_view_matriculas_by_idcurso(id_curso))
+
             def cancelar():
                 top.destroy()
-                
-            
+
             guardar = []
             # labels
             lb_name = Label(top, text='Nombre(s) y apellidos')
@@ -245,34 +244,34 @@ class MultiColumnListbox(object):
             lb_categoria = Label(top, text='Categoria')
             lb_datos = Label(top, text='Otros datos')
             # labels grid
-            lb_name.grid(row=1,column=0, sticky='w', pady=5, padx=10)
-            lb_ci.grid(row=2,column=0, sticky='w', pady=5, padx=10)
-            lb_municipio.grid(row=3,column=0, sticky='w', pady=5, padx=10)
-            lb_tel.grid(row=4,column=0, sticky='w', pady=5, padx=10)
-            lb_horario.grid(row=5,column=0, sticky='w', pady=5, padx=10)
-            lb_categoria.grid(row=6,column=0, sticky='w', pady=5, padx=10)
-            lb_datos.grid(row=7,column=0, sticky='wn', pady=5, padx=10)
-            
+            lb_name.grid(row=1, column=0, sticky='w', pady=5, padx=10)
+            lb_ci.grid(row=2, column=0, sticky='w', pady=5, padx=10)
+            lb_municipio.grid(row=3, column=0, sticky='w', pady=5, padx=10)
+            lb_tel.grid(row=4, column=0, sticky='w', pady=5, padx=10)
+            lb_horario.grid(row=5, column=0, sticky='w', pady=5, padx=10)
+            lb_categoria.grid(row=6, column=0, sticky='w', pady=5, padx=10)
+            lb_datos.grid(row=7, column=0, sticky='wn', pady=5, padx=10)
+
             # entrys
             e_name = Entry(top, width=30)
             e_ci = Entry(top, width=30)
-            e_municipio = self.combobox(top,municipios, width=27)
+            e_municipio = self.combobox(top, municipios, width=27)
             e_tel = Entry(top, width=10)
-            e_horario = self.combobox(top,horarios, width=27)
-            e_categoria = self.combobox(top,cat_code, width=27)
+            e_horario = self.combobox(top, horarios, width=27)
+            e_categoria = self.combobox(top, cat_code, width=27)
             e_datos = Text(top, width=22, height=4)
             # entrys grid
-            e_name.grid(row=1,column=1, sticky='w', pady=5)
-            e_ci.grid(row=2,column=1, sticky='w', pady=5)
-            e_municipio.grid(row=3,column=1, sticky='w', pady=5)
-            e_tel.grid(row=4,column=1, sticky='w', pady=5)
-            e_horario.grid(row=5,column=1, sticky='w', pady=5)
-            e_categoria.grid(row=6,column=1, sticky='w', pady=5)
-            e_datos.grid(row=7,column=1, sticky='w', pady=5)
-            
-            #valores que carga por defecto
-            e_name.insert(0,nombre)
-            e_ci.insert(0,ci)
+            e_name.grid(row=1, column=1, sticky='w', pady=5)
+            e_ci.grid(row=2, column=1, sticky='w', pady=5)
+            e_municipio.grid(row=3, column=1, sticky='w', pady=5)
+            e_tel.grid(row=4, column=1, sticky='w', pady=5)
+            e_horario.grid(row=5, column=1, sticky='w', pady=5)
+            e_categoria.grid(row=6, column=1, sticky='w', pady=5)
+            e_datos.grid(row=7, column=1, sticky='w', pady=5)
+
+            # valores que carga por defecto
+            e_name.insert(0, nombre)
+            e_ci.insert(0, ci)
             munic_values = e_municipio['values']
             coinc = 0
             for i in range(len(munic_values)):
@@ -280,9 +279,9 @@ class MultiColumnListbox(object):
                     coinc = i
                     break
             e_municipio.current(coinc)
-            
-            e_tel.insert(0,tel)
-            
+
+            e_tel.insert(0, tel)
+
             hor_values = e_horario['values']
             coinc = 0
             for i in range(len(hor_values)):
@@ -290,7 +289,7 @@ class MultiColumnListbox(object):
                     coinc = i
                     break
             e_horario.current(coinc)
-                        
+
             cat_values = e_categoria['values']
             coinc = 0
             for i in range(len(cat_values)):
@@ -298,47 +297,44 @@ class MultiColumnListbox(object):
                     coinc = i
                     break
             e_categoria.current(coinc)
-            
-            e_datos.insert('1.0',datos)
-            
+
+            e_datos.insert('1.0', datos)
+
             e_name.focus_set()
-        
+
             frame_bts = Frame(top)
             frame_bts.grid(row=8, column=1, sticky='e')
-            
-            bt_aceptar = Button(frame_bts, text='Agregar', command=aceptar)
+
+            bt_aceptar = Button(frame_bts, text='Actualizar', command=aceptar)
             bt_aceptar.grid(row=0, column=0, padx=10, pady=10)
-            bt_cancelar = Button(frame_bts, text='Cancelar', command= cancelar)
+            bt_cancelar = Button(frame_bts, text='Cancelar', command=cancelar)
             bt_cancelar.grid(row=0, column=1, padx=10, pady=10)
-            
-            
-            
-            
-            
-                
+
             top.mainloop()
-            
-    
-    
+
     def eliminar(self):
         if messagebox.askokcancel('Confirmar eliminacion',
-        f'Seguro que desea eliminar la pelicula seleccionada?\n\n(Nota: NO se borrara del ordenador, solo del listado)'):
+                                  f'Confirme que desea eliminar la matricula seleccionada'):
 
             indexes = [self.tree.index(idx) for idx in self.tree.selection()]
-            
-            reductor = 0 #al ir reduciendo la lista, corre de lugar los index
-            for index in indexes:    
+
+            reductor = 0  # al ir reduciendo la lista, corre de lugar los index
+            sc = self.curso.split('-')
+            for index in indexes:
                 idxFinal = index - reductor
                 valoresItem = self.list[idxFinal]
-                id = valoresItem[0]
+                ci = valoresItem[1]
+                curso_num = sc[0]
+                year = sc[1]
 
-                print('index:',index,'id:',id)
-                
+                print('index:', index, 'id:', id)
+
                 self.list.pop(idxFinal)
                 reductor += 1
 
+                eliminar_matr_by_ci_and_curso(ci, curso_num, year)
+                
                 self.change(self.list)
-   
 
     def setupMenuContextual(self):
 
@@ -346,7 +342,6 @@ class MultiColumnListbox(object):
         self.mc.add_command(label='Editar datos...', command=self.editar)
         self.mc.add_separator()
         self.mc.add_command(label='Eliminar', command=self.eliminar)
-     
 
     def do_popup(self, event):
         self.idRow = ''
@@ -359,13 +354,12 @@ class MultiColumnListbox(object):
 
                 valoresItem = self.list[idx]
 
-                #self.actualizarFrameLateral(valoresItem)
+                # self.actualizarFrameLateral(valoresItem)
 
                 self.mc.post(event.x_root, event.y_root)
 
         finally:
             self.mc.grab_release()
-
 
     def getIdsSelected(self):
         indexes = [self.tree.index(idx) for idx in self.tree.selection()]
@@ -378,12 +372,12 @@ class MultiColumnListbox(object):
     def combobox(self, top, valores, width=20, modo=True):
         estado = 'readonly' if modo else 'normal'
         box = ttk.Combobox(top, width=width,
-                                state=estado)
+                           state=estado)
         box['values'] = valores
         box.current(0)  # Selecciona el primer elemento de la tupla.
         #box.bind("<<ComboboxSelected>>", combobox_elegir)
         return box
-    
+
 
 def sortby(tree, col, descending):
     """sort tree contents when a column header is clicked on"""
@@ -416,4 +410,3 @@ if __name__ == '__main__':
     frame1 = tk.Frame(root)
     listbox = MultiColumnListbox(frame1, carros_header, lista_carros)
     root.mainloop()
-
