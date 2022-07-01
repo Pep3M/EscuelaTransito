@@ -36,6 +36,10 @@ def init_multilist_matriculas(frame_container):
     id_curso = get_idcurso_by_curso_year(10,2022)
     matriculas_lista = get_view_matriculas_by_idcurso(id_curso)
     
+    if not matriculas_lista:
+        matricula_empty = ['' for _ in header_matriculas]
+        matriculas_lista = []
+        matriculas_lista.append(matricula_empty)
     
     multi = MultiColumnListbox(frame_container, header_matriculas,matriculas_lista)
     return multi

@@ -15,10 +15,11 @@ def agregar_matricula():
     horarios = get_horarios()
     cat_code = get_all_cat_code()
 
-    form = Form_new_matric(top, municipios, horarios, cat_code)
+    form = Form_new_matric(top, municipios, horarios, cat_code, treeview)
+    def closing():
+        print('top cerrado')
     
     top.mainloop()
-    
 
 
 # VISUAL #
@@ -41,6 +42,7 @@ bt_new_matr.pack()
 tree_frame = Frame(body_frame, background='blue')
 tree_frame.pack(expand=True, fill='both', side='right')
 
-init_multilist_matriculas(tree_frame)
+treeview = init_multilist_matriculas(tree_frame)
+
 
 root.mainloop()

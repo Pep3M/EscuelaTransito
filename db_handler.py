@@ -146,12 +146,27 @@ def datos_iniciales(db):
         param = [categoria[0], categoria[1], categoria[2]]
         db.cursor().execute(sql, param)
 
+    # primer curso
     sql = '''
     INSERT OR IGNORE INTO %s (%s,%s,%s)
     VALUES (?,?,?)
     ''' % (T_CURSOS, NOMBRE_CURSO, MATRICULA_INIT, YEAR)
     param = ['10', 615, 2022]
     db.cursor().execute(sql, param)
+
+    #horario inicial
+    horarios = [
+        ['9:00 AM - 11:00 AM', 'Horario de la mañana'],
+        ['5:00 PM - 7:00 PM', 'Horario de la tarde'],
+        ['2:00 PM - 4:00 PM', 'WhatsApp'],
+    ]
+    for horario in horarios:
+        sql = '''
+        INSERT OR IGNORE INTO %s (%s,%s)
+        VALUES (?,?)
+        ''' % (T_HORARIOS, HORARIO, DATOS)
+        param = [horario[0],horario[1]]
+        db.cursor().execute(sql, param)
 
 
 # datos iniciales cuando no existe la DB
