@@ -71,9 +71,9 @@ frame_superior = Frame(body_frame, background='#1b1e2b', height=50)
 frame_superior.pack(fill='x', anchor=E)
 
 Label(frame_superior,background='#1b1e2b', text='').grid(row=0, column=0, padx=550)
-Label(frame_superior, text='Curso', background='#1b1e2b', foreground='#a3a9c9').grid(row=0, column=1)
+Label(frame_superior, text='Curso', background='#1b1e2b', foreground='#a3a9c9', font=('Helvetica 14')).grid(row=0, column=1)
 
-cb_curso = Combobox(frame_superior, background='blue', width=8, state='readonly')
+cb_curso = Combobox(frame_superior, background='blue', width=8, state='readonly', font=('Helvetica 14'))
 cb_curso.grid(row=0,column=2, sticky='e', padx=10, pady=10)
 valores_by_cbcursos(cb_curso)
 cb_curso.bind("<<ComboboxSelected>>", elegir_curso)
