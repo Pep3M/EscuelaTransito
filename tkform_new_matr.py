@@ -1,16 +1,20 @@
 
 from msilib.schema import ComboBox
 from tkinter import END, Button, Entry, Frame, Label, StringVar, Text, Tk
+from tkinter.messagebox import showerror
 from tkinter.ttk import Combobox
+from MultiListBox_class import MultiColumnListbox
 from db_handler import agregar_matricula
 
 from db_handler import get_municipios
+from funciones import actualizar_treeview
 
 
 class Form_new_matric:
     
-    def __init__(self, frame_container, municipios, horarios, cat_code):
+    def __init__(self, frame_container, municipios, horarios, cat_code, treeview:MultiColumnListbox):
         self.frame_container = frame_container
+        self.treeview = treeview
         self.guardar = []
         # labels
         self.lb_name = Label(self.frame_container, text='Nombre(s) y apellidos')
@@ -58,6 +62,7 @@ class Form_new_matric:
         
     
     def aceptar(self):
+        self.guardar.clear()
         self.guardar.append(self.e_name.get())
         self.guardar.append(self.e_ci.get())
         self.guardar.append(self.e_municipio.get())
@@ -65,10 +70,15 @@ class Form_new_matric:
         self.guardar.append(self.e_horario.get())
         self.guardar.append(self.e_datos.get('1.0',END))
         self.guardar.append(self.e_categoria.get())
-        #metodo externo no reutilizable
-        agregar_matricula(self.guardar)
         
-        self.frame_container.destroy()
+        if not self.check_required_fields():
+            showerror('Faltan campos requerido','Compruebe que el campo "Nombre(s) y apellidos" y "Carnet de Identidad" esten correctamente llenados')
+        else:
+            #metodo externo no reutilizable
+            agregar_matricula(self.guardar)
+            
+            self.frame_container.destroy()
+            actualizar_treeview(self.treeview)
     
     def cancelar(self):
         self.frame_container.destroy()
@@ -87,6 +97,8 @@ class Form_new_matric:
         #self.valor.set(self.box.get())
         pass
 
+    def check_required_fields(self):
+        return self.e_name.get() and self.e_ci.get()
 
 
 

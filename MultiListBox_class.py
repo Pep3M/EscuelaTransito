@@ -2,7 +2,7 @@
 Here the TreeView widget is configured as a multi-column listbox
 with adjustable column width and column-header-click sorting.
 '''
-from tkinter import END, messagebox
+from tkinter import CENTER, END, W, messagebox
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.font as tkFont
@@ -11,8 +11,7 @@ import tkinter.font as tkFont
 class MultiColumnListbox(object):
     """use a ttk.TreeView as a multicolumn ListBox"""
 
-
-    def __init__(self, frame_container:tk.Frame, column_header, list: list):
+    def __init__(self, frame_container: tk.Frame, column_header, list: list):
         """
         Constructor de la clase MultiColumnListBox. Genera una lista con encabezados. Necesita un frame contenedor (tkinter), una lista de encabezado y una lista de tuplas, donde el largo de cada una es igual al largo de la lista de encabezado
 
@@ -21,19 +20,17 @@ class MultiColumnListbox(object):
             column_header (list): Una lista de cada encabezado
             list (list[tuple | list]): Una lista de tuplas. Cada tupla representa una fila
         """
-        
+
         self.tree = None
         self.frame = frame_container
         self.column_header = column_header
         self.list = list
-        
+
         self._setup_widgets()
         self._build_tree()
 
         self.idRow = ''
-    
-        
-        
+
     def _setup_widgets(self):
 
         container = self.frame
@@ -43,25 +40,24 @@ class MultiColumnListbox(object):
         style = ttk.Style()
 
         style.theme_use('clam')
-       
-        
+
         style.configure('Treeview',
-                        background = '#393939',
-                        foreground = 'white',
-                        fieldbackground = '#393939'                        
-                        )
-        
+                        background='#292d3e',
+                        foreground='white',
+                        fieldbackground='#292d3e')
+
         # create a treeview with dual scrollbars
-        self.tree = ttk.Treeview(columns=self.column_header, show="headings", style='Treeview')
-       
+        self.tree = ttk.Treeview(columns=self.column_header,
+                                 show="headings",
+                                 style='Treeview')
+
         #si tenemos datos en columnas, mostrar las columnas q seran visibles
         self.tree.config(height=30, displaycolumns=self.column_header)
         self.tree.pack(expand=True, fill='both')
 
         # scroll bars
-        vsb = ttk.Scrollbar(orient="vertical",
-                            command=self.tree.yview)
-        
+        vsb = ttk.Scrollbar(orient="vertical", command=self.tree.yview)
+
         #hsb = ttk.Scrollbar(orient="horizontal",
         #                    command=self.tree.xview)
         self.tree.configure(yscrollcommand=vsb.set
@@ -81,35 +77,38 @@ class MultiColumnListbox(object):
         for col, i in zip(self.column_header, range(len(self.column_header))):
 
             # creando el head de cada columna, y el comando de ordenar
-            self.tree.heading(col, text=col.title(),
+            self.tree.heading(col,
+                              text=col.title(),
                               command=lambda c=col: sortby(self.tree, c, 0))
 
             # adjust the column's width to the header string
-            self.tree.column(col, width=tkFont.Font().measure(col.title()), minwidth=100)
+            self.tree.column(col,
+                             width=tkFont.Font().measure(col.title()),
+                             minwidth=100, anchor=CENTER)
 
             # ancho de columnas condicionales (cambiar codigo por uno mas reutilizable)
-            """ if i == 0:
-                self.tree.column(col, width=220)
+            if i == 0:
+                self.tree.column(col, width=220, anchor=W)
             if i == 1:
-                self.tree.column(col, width=220)
+                self.tree.column(col, width=100)
             if i == 2:
-                self.tree.column(col, width=220)
+                self.tree.column(col, width=150, anchor=W)
             if i == 3:
-                self.tree.column(col, width=150)
+                self.tree.column(col, width=50)
             if i == 4:
                 self.tree.column(col, width=80)
             if i == 5:
-                self.tree.column(col, width=70)
+                self.tree.column(col, width=50)
             if i == 6:
-                self.tree.column(col, width=60)
-            if i == 7:
-                self.tree.column(col, width=60)
-            if i == 8:
-                self.tree.column(col, width=60) """
+                self.tree.column(col, width=150, anchor=W)
 
         # Para crear una cebra, actualmente se borra al escribir
-        self.tree.tag_configure('dark', background='#252525', foreground='white')
-        self.tree.tag_configure('light', background='#393939', foreground='white')
+        self.tree.tag_configure('dark',
+                                background='#252525',
+                                foreground='white')
+        self.tree.tag_configure('light',
+                                background='#393939',
+                                foreground='white')
 
         cont = 0
         for item in self.list:
@@ -117,7 +116,7 @@ class MultiColumnListbox(object):
             self.tree.insert('', 'end', values=item
                              #, tags=('fuente',color)
                              )
-            
+
             # ajustar el nivel de cada columna segun sus valores
             """ for ix, val in enumerate(item):
                 col_w = tkFont.Font().measure(val)
@@ -129,12 +128,10 @@ class MultiColumnListbox(object):
             cont += 1
 
         self.frame.pack(expand=True, fill=tk.BOTH)
-        
+
         self.tree.bind("<Double-1>", self.on_double_click)
         self.tree.bind("<<TreeviewSelect>>", self.on_select_action)
         self.tree.bind('<ButtonRelease-3>', self.do_popup)
-        
-        
 
     # Evento creado para cuando se de doble click en un item
     def on_double_click(self, event):
@@ -144,25 +141,23 @@ class MultiColumnListbox(object):
         texto = diccionario['values'][2]
         print(texto)
         #except IndexError:
-            #print('No se ha selecionado ninguna fila, dobleclick no abrira ninguna carpeta')
-
+        #print('No se ha selecionado ninguna fila, dobleclick no abrira ninguna carpeta')
 
     def change(self, list):
         #borrar toda la lista para crear una nueva
         for child in self.tree.get_children():
             self.tree.delete(child)
-        
+
         self.list = list
-        
+
         cont = 0
-        
+
         for item in list:
             self.tree.insert('', 'end', values=item)
             cont += 1
 
+    def on_select_action(self, event):
 
-    def on_select_action(self,event):
-    
         item_selected = self.tree.focus()
         if not item_selected: return
 
@@ -170,11 +165,9 @@ class MultiColumnListbox(object):
         item = self.tree.item(item_selected)
         valoresItem = item['values']
 
-        print('Se selecciono',valoresItem)
-    
+        print('Se selecciono', valoresItem)
 
     # -------------- Menu Contextual ------------
-
     """ 
     def abrir(self):
         if self.idRow:
@@ -275,22 +268,22 @@ class MultiColumnListbox(object):
         self.mc.add_separator()
         self.mc.add_command(label='Eliminar', command=self.eliminar)
      """
+
     def do_popup(self, event):
         self.idRow = ''
         try:
             self.idRow = self.tree.identify_row(event.y)
             if self.idRow:
                 self.tree.selection_set(self.idRow)
-                
+
                 idx = self.tree.index(self.idRow)
-                
+
                 valoresItem = self.list[idx]
 
                 self.actualizarFrameLateral(valoresItem)
-                
+
                 self.mc.post(event.x_root, event.y_root)
 
-            
         finally:
             self.mc.grab_release()
 
@@ -309,14 +302,14 @@ class MultiColumnListbox(object):
         FrameLateral.setNombre(self.frameLateral,texto=NombFila)
         FrameLateral.setNombreAlt(self.frameLateral,texto=NombAltFila)
         FrameLateral.setDescripcion(self.frameLateral,texto=descrFila)
-        FrameLateral.setCast(self.frameLateral,texto=castFila) """   
-    
+        FrameLateral.setCast(self.frameLateral,texto=castFila) """
+
     def getIdsSelected(self):
         indexes = [self.tree.index(idx) for idx in self.tree.selection()]
         ids = []
-        for index in indexes:    
-                valoresItem = self.list[index]
-                ids.append(valoresItem[0])
+        for index in indexes:
+            valoresItem = self.list[index]
+            ids.append(valoresItem[0])
         return ids
 
 
@@ -324,8 +317,7 @@ def sortby(tree, col, descending):
     """sort tree contents when a column header is clicked on"""
     # grab values to sort
 
-    data = [(tree.set(child, col), child)
-            for child in tree.get_children('')]
+    data = [(tree.set(child, col), child) for child in tree.get_children('')]
     # if the data to be sorted is numeric change to float
     #data =  change_numeric(data)
     # now sort the data in place
@@ -333,25 +325,18 @@ def sortby(tree, col, descending):
     for ix, item in enumerate(data):
         tree.move(item[1], '', ix)
     # switch the heading so it will sort in the opposite direction
-    tree.heading(col, command=lambda col=col: sortby(
-        tree, col, int(not descending)))
+    tree.heading(
+        col, command=lambda col=col: sortby(tree, col, int(not descending)))
 
 
 # the test data ...
 
 carros_header = ['car', 'repair', '3']
-lista_carros = [
-    ('Hyundai', 'brakes', '3'),
-    ('Honda', 'light', '3'),
-    ('Lexus', 'battery', '3'),
-    ('Benz', 'wiper', '3'),
-    ('Ford', 'tire', '3'),
-    ('Chevy', 'air', '3'),
-    ('Chrysler', 'piston', '3'),
-    ('Toyota', 'brake pedal', '3'),
-    ('BMW', 'seat', '3')
-]
-
+lista_carros = [('Hyundai', 'brakes', '3'), ('Honda', 'light', '3'),
+                ('Lexus', 'battery', '3'), ('Benz', 'wiper', '3'),
+                ('Ford', 'tire', '3'), ('Chevy', 'air', '3'),
+                ('Chrysler', 'piston', '3'), ('Toyota', 'brake pedal', '3'),
+                ('BMW', 'seat', '3')]
 
 if __name__ == '__main__':
     root = tk.Tk()
@@ -359,5 +344,3 @@ if __name__ == '__main__':
     frame1 = tk.Frame(root)
     listbox = MultiColumnListbox(frame1, carros_header, lista_carros)
     root.mainloop()
-
-
