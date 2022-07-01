@@ -86,6 +86,25 @@ def create_tables(db):
         FOREIGN KEY ({ID_HORARIO}) REFERENCES {T_HORARIOS}('id'))
     '''
     db.cursor().execute(sql)
+    
+    # VIEW MATRICULAS
+    sql = f'''
+    CREATE VIEW IF NOT EXISTS {V_MATRICULAS}
+    AS SELECT 
+    {T_ALUMNOS}.{FULL_NAME},
+    {T_ALUMNOS}.{CI},
+    {T_ALUMNOS}.{MUNICIPIO},
+    {T_ALUMNOS}.{TELEFONO},
+    {T_HORARIOS}.{HORARIO},
+    {T_CATEGORIA_LIC}.{CODIGO_CAT},
+    {T_MATRICULAS}.{DATOS},
+    {T_MATRICULAS}.{ID_CURSO}
+    FROM {T_MATRICULAS}
+    INNER JOIN {T_ALUMNOS} on {ID_ALUMNO}={T_ALUMNOS}.id
+    INNER JOIN {T_HORARIOS} on {ID_HORARIO}={T_HORARIOS}.id
+    INNER JOIN {T_CATEGORIA_LIC} on {ID_CATEGORIA_LIC}={T_CATEGORIA_LIC}.id;
+    '''
+    db.cursor().execute(sql)
 
 
 @conexion_db
@@ -127,12 +146,19 @@ def datos_iniciales(db):
         param = [categoria[0], categoria[1], categoria[2]]
         db.cursor().execute(sql, param)
 
+    sql = '''
+    INSERT OR IGNORE INTO %s (%s,%s,%s)
+    VALUES (?,?,?)
+    ''' % (T_CURSOS, NOMBRE_CURSO, MATRICULA_INIT, YEAR)
+    param = ['10', 615, 2022]
+    db.cursor().execute(sql, param)
+
 
 # datos iniciales cuando no existe la DB
 if not path.exists(DB_NAME):
     create_tables()
     datos_iniciales()
-create_tables()
+#create_tables()
 
 # Consultas (SELECTS)
 
@@ -329,16 +355,16 @@ def get_horario_by_id(id):
     
     return fetch
 
-""" 
-def get_matriculas_by_curso_year(curso, year=2022):
-    id_curso = get_idcurso_by_curso_year(curso,year)
-    
+
+def get_view_matriculas_by_idcurso(id_curso):
+        
     db = connect(DB_NAME)
     cursor = db.cursor()
     
-    sql = '''
-    SELECT * FROM %s WHERE %s=?;
-    ''' % (T_MATRICULAS, ID_CURSO)
+    sql = f'''
+    SELECT {FULL_NAME},{CI},{MUNICIPIO},{TELEFONO},{HORARIO},{CODIGO_CAT},{DATOS} 
+    FROM {V_MATRICULAS} WHERE {ID_CURSO}=?;
+    '''
     param = [id_curso]
     
     cursor.execute(sql, param)
@@ -346,21 +372,11 @@ def get_matriculas_by_curso_year(curso, year=2022):
     db.close()
     
     if fetch: 
-        matriculas = []
-        key_extended = KEY_MATRICULAS.extend([FULL_NAME, CODIGO_CAT, HORARIO])
-        for tupla in fetch:
-            tupla = list(tupla)
-            tupla.append(get_alumno_by_id(tupla[4])[0])
-            tupla.append(get_categoria_by_id(tupla[5])[1])
-            tupla.append(get_horario_by_id(tupla[6])[0])
-            matriculas.append(dict(zip(key_extended, tupla)))
-        
-        return matriculas
+        return fetch
     else:
         return False
 
-print(get_matriculas_by_curso_year(10))
- """
+
 
 
 # INSERTS

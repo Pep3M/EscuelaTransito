@@ -1,6 +1,6 @@
 from tkinter import Button, Frame, Tk, Toplevel
 from db_handler import get_all_cat_code, get_horarios, get_municipios
-from funciones import init_multilist_alumnos
+from funciones import init_multilist_matriculas
 from tkform_new_matr import Form_new_matric
 
 # Funciones #
@@ -25,7 +25,7 @@ def agregar_matricula():
 
 root = Tk()
 root.title('Transito matriculas')
-root.minsize(width=600, height=350)
+root.minsize(width=1000, height=350)
 
 body_frame = Frame(root)
 body_frame.pack(expand=True, fill='both')
@@ -41,6 +41,6 @@ bt_new_matr.pack()
 tree_frame = Frame(body_frame, background='blue')
 tree_frame.pack(expand=True, fill='both', side='right')
 
-init_multilist_alumnos(tree_frame)
+init_multilist_matriculas(tree_frame)
 
 root.mainloop()

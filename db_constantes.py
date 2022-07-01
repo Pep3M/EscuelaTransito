@@ -48,3 +48,18 @@ KEY_MATRICULAS = [
     ID_HORARIO,
     DATOS
 ]
+
+
+# ---- VIEWS -------
+
+# V_MATRICULAS
+V_MATRICULAS = 'v_matriculas'
+KEYS_V_MATRICULAS = [
+    FULL_NAME,
+    CI,
+    MUNICIPIO,
+    TELEFONO,
+    HORARIO,
+    CODIGO_CAT,
+    DATOS
+]

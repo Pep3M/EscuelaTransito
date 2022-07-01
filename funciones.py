@@ -1,5 +1,5 @@
 from MultiListBox_class import MultiColumnListbox
-from db_handler import get_all_alumnos
+from db_handler import get_all_alumnos, get_idcurso_by_curso_year, get_view_matriculas_by_idcurso
 from db_constantes import *
 
 def init_multilist_alumnos(frame_container):
@@ -8,6 +8,8 @@ def init_multilist_alumnos(frame_container):
         'Carnet Identidad',
         'Municipio',
         'Telefono',
+        'Horario',
+        'Categoria',
         'Otros datos',
     ]
     
@@ -19,25 +21,24 @@ def init_multilist_alumnos(frame_container):
     return multi
 
 
-""" 
+
 def init_multilist_matriculas(frame_container):
     header_matriculas = [
         'Nombre completo',
         'Carnet Identidad',
-        'Horario',
+        'Municipio',
         'Telefono',
+        'Horario',
+        'Categoria',
         'Otros datos',
     ]
     
-    fetch_matriculas = get_matriculas_by_curso_year(10,2022)
-    print(fetch_matriculas)
-    matriculas_lista = []
+    id_curso = get_idcurso_by_curso_year(10,2022)
+    matriculas_lista = get_view_matriculas_by_idcurso(id_curso)
     
-    if fetch_matriculas:
-        pass
     
-    multi = MultiColumnListbox(frame_container, header_matriculas,lista_matriculas)
+    multi = MultiColumnListbox(frame_container, header_matriculas,matriculas_lista)
     return multi
 
- """
+
        
