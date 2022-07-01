@@ -86,7 +86,7 @@ def create_tables(db):
         FOREIGN KEY ({ID_HORARIO}) REFERENCES {T_HORARIOS}('id'))
     '''
     db.cursor().execute(sql)
-    
+
     # VIEW MATRICULAS
     sql = f'''
     CREATE VIEW IF NOT EXISTS {V_MATRICULAS}
@@ -98,7 +98,8 @@ def create_tables(db):
     {T_HORARIOS}.{HORARIO},
     {T_CATEGORIA_LIC}.{CODIGO_CAT},
     {T_MATRICULAS}.{DATOS},
-    {T_MATRICULAS}.{ID_CURSO}
+    {T_MATRICULAS}.{ID_CURSO},
+    {T_MATRICULAS}..id
     FROM {T_MATRICULAS}
     INNER JOIN {T_ALUMNOS} on {ID_ALUMNO}={T_ALUMNOS}.id
     INNER JOIN {T_HORARIOS} on {ID_HORARIO}={T_HORARIOS}.id
@@ -154,7 +155,7 @@ def datos_iniciales(db):
     param = ['10', 615, 2022]
     db.cursor().execute(sql, param)
 
-    #horario inicial
+    # horario inicial
     horarios = [
         ['9:00 AM - 11:00 AM', 'Horario de la mañana'],
         ['5:00 PM - 7:00 PM', 'Horario de la tarde'],
@@ -165,7 +166,7 @@ def datos_iniciales(db):
         INSERT OR IGNORE INTO %s (%s,%s)
         VALUES (?,?)
         ''' % (T_HORARIOS, HORARIO, DATOS)
-        param = [horario[0],horario[1]]
+        param = [horario[0], horario[1]]
         db.cursor().execute(sql, param)
 
 
@@ -173,9 +174,10 @@ def datos_iniciales(db):
 if not path.exists(DB_NAME):
     create_tables()
     datos_iniciales()
-#create_tables()
+# create_tables()
 
 # Consultas (SELECTS)
+
 
 @conexion_db
 def get_all_alumnos(db: Connection):
@@ -250,25 +252,25 @@ def get_last_curso_id(db: Connection):
     return cursor.fetchone()[0]
 
 
-
 def get_idcurso_by_curso_year(curso, year):
     db = connect(DB_NAME)
     cursor = db.cursor()
-    
+
     sql = '''
     SELECT id FROM %s WHERE %s=? AND %s=?
     ''' % (T_CURSOS, NOMBRE_CURSO, YEAR)
-    param = [curso,year]
-    
+    param = [curso, year]
+
     cursor.execute(sql, param)
     fetch = cursor.fetchone()
     db.close()
-    
-    if fetch: id = fetch[0]
-    else: id = 0
-    
-    return id
 
+    if fetch:
+        id = fetch[0]
+    else:
+        id = 0
+
+    return id
 
 
 @conexion_db
@@ -294,6 +296,7 @@ def get_id_cat(categoria_code):
     db.close()
     return id
 
+
 def get_id_horario(horario):
     db = connect(DB_NAME)
     cursor = db.cursor()
@@ -310,88 +313,91 @@ def get_id_horario(horario):
 def get_curso_by_id(id):
     db = connect(DB_NAME)
     cursor = db.cursor()
-    
+
     sql = '''
     SELECT %s FROM %s WHERE id=?
     ''' % (NOMBRE_CURSO, T_CURSOS)
     param = [id]
-    
+
     cursor.execute(sql, param)
     fetch = cursor.fetchone()
     db.close()
-    
-    if fetch: nombre = fetch[0]
-    else: nombre = ''
-    
+
+    if fetch:
+        nombre = fetch[0]
+    else:
+        nombre = ''
+
     return nombre
-    
+
+
 def get_alumno_by_id(id):
     db = connect(DB_NAME)
     cursor = db.cursor()
-    
+
     sql = '''
     SELECT %s,%s,%s FROM %s WHERE id=?
     ''' % (FULL_NAME, CI, TELEFONO, T_ALUMNOS)
     param = [id]
-    
+
     cursor.execute(sql, param)
     fetch = cursor.fetchone()
     db.close()
-    
+
     return fetch
+
 
 def get_categoria_by_id(id):
     db = connect(DB_NAME)
     cursor = db.cursor()
-    
+
     sql = '''
     SELECT %s,%s FROM %s WHERE id=?
     ''' % (CODIGO_CAT, NOMBRE_CAT, T_CATEGORIA_LIC)
     param = [id]
-    
+
     cursor.execute(sql, param)
     fetch = cursor.fetchone()
     db.close()
-    
+
     return fetch
+
 
 def get_horario_by_id(id):
     db = connect(DB_NAME)
     cursor = db.cursor()
-    
+
     sql = '''
     SELECT %s,%s FROM %s WHERE id=?
     ''' % (HORARIO, DATOS, T_HORARIOS)
     param = [id]
-    
+
     cursor.execute(sql, param)
     fetch = cursor.fetchone()
     db.close()
-    
+
     return fetch
 
 
 def get_view_matriculas_by_idcurso(id_curso):
-        
+
     db = connect(DB_NAME)
     cursor = db.cursor()
-    
+
     sql = f'''
     SELECT {FULL_NAME},{CI},{MUNICIPIO},{TELEFONO},{HORARIO},{CODIGO_CAT},{DATOS} 
     FROM {V_MATRICULAS} WHERE {ID_CURSO}=?;
     '''
     param = [id_curso]
-    
+
     cursor.execute(sql, param)
     fetch = cursor.fetchall()
     db.close()
-    
-    if fetch: 
+
+    if fetch:
         return fetch
     else:
         return False
-
-
 
 
 # INSERTS
@@ -405,6 +411,25 @@ def agregar_alumno(datos_alumno):
     VALUES (?,?,?,?,?)
     ''' % (T_ALUMNOS, FULL_NAME, CI, MUNICIPIO, TELEFONO, DATOS)
 
+    cursor.execute(sql, datos_alumno)
+
+    db.commit()
+    db.close()
+
+    id_alumno = get_id_alumno_by_ci(datos_alumno[1])
+    return id_alumno
+
+
+def actualizar_alumno(datos_alumno:list, old_ci):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+
+    sql = f'''
+    UPDATE {T_ALUMNOS} SET {FULL_NAME}=?, {CI}=?, {MUNICIPIO}=?, {TELEFONO}=?, {DATOS}=?
+    WHERE {CI}=?
+    '''
+    parm = datos_alumno
+    parm.append(old_ci)
     cursor.execute(sql, datos_alumno)
 
     db.commit()
@@ -438,15 +463,45 @@ def agregar_matricula(datos_matricula: list):
     INSERT OR IGNORE INTO %s (%s,%s,%s,%s,%s,%s)
     VALUES (?,?,?,?,?,?)
     ''' % (T_MATRICULAS, FECHA, ID_CURSO, ID_ALUMNO, ID_CATEGORIA_LIC, ID_HORARIO, DATOS)
-    
+
     param = [str(datetime.now())[0:10], get_last_curso_id(), id_alumno, get_id_cat(
         categoria), get_id_horario(horario), datos]
-    
+
     cursor.execute(sql, param)
     db.commit()
     db.close()
 
 
-#print(agregar_alumno(['Juan Pedro', '811232145765', 'Cerro', '53423245', '']))
+def actualizar_matricula(datos_matricula: list, old_ci):
+
+    nombre = datos_matricula[0]
+    ci = datos_matricula[1]
+    municipio = datos_matricula[2]
+    telefono = datos_matricula[3]
+    horario = datos_matricula[4]
+    datos = datos_matricula[5]
+    categoria = datos_matricula[6]
+
+    
+    # actualizar datos de alumnos, sin el horario
+    datos_alumnos = [nombre, ci, municipio, telefono, datos]
+    id_alumno = actualizar_alumno(datos_alumnos, old_ci)
+
+    
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+
+    sql = f'''
+    UPDATE {T_MATRICULAS} SET {ID_CATEGORIA_LIC}=?, {ID_HORARIO}=?, {DATOS}=?
+    WHERE {ID_ALUMNO}=? AND {ID_CURSO}=?;
+    '''
+
+    param = [get_id_cat(categoria), get_id_horario(horario), datos, id_alumno, get_last_curso_id(db)]
+
+    cursor.execute(sql, param)
+    db.commit()
+    db.close()
+
+#actualizar_matricula(['Esteban Lopez Abreu', '54011231432', 'Centro Habana', '54321243', '9:00 AM - 11:00 AM', 'asdasd\n', 'A-1'],'540112314321')
 # print(select_alumno_by_ci(ci='811232145765'))
 # print(get_horarios())

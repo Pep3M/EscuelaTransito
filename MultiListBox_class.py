@@ -2,10 +2,13 @@
 Here the TreeView widget is configured as a multi-column listbox
 with adjustable column width and column-header-click sorting.
 '''
-from tkinter import CENTER, END, W, messagebox
+from tkinter import CENTER, END, W, Button, Text, Entry, Frame, Label, Toplevel, messagebox
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.font as tkFont
+
+
+from db_handler import actualizar_matricula, get_all_cat_code, get_horarios, get_last_curso_id, get_municipios, get_view_matriculas_by_idcurso
 
 
 class MultiColumnListbox(object):
@@ -72,6 +75,8 @@ class MultiColumnListbox(object):
 
         container.grid_columnconfigure(0, weight=1)
         container.grid_rowconfigure(0, weight=1)
+        
+        self.setupMenuContextual()
 
     def _build_tree(self):
         for col, i in zip(self.column_header, range(len(self.column_header))):
@@ -167,76 +172,154 @@ class MultiColumnListbox(object):
 
         print('Se selecciono', valoresItem)
 
+
+
     # -------------- Menu Contextual ------------
-    """ 
-    def abrir(self):
-        if self.idRow:
-            self.tree.selection_set(self.idRow)
-            idx = self.tree.index(self.idRow)
-            valoresItem = self.list[idx]
-            #print('id:',valoresItem[0])
-            abrirCarpeta(valoresItem[9])
-            
-    def renombrar(self):
-        if self.idRow:
-            self.tree.selection_set(self.idRow)
-            idx = self.tree.index(self.idRow)
-            valoresItem = self.list[idx]
-            id = valoresItem[0]
-            titulo = valoresItem[1]
     
-        
-            top = tk.Toplevel()
-            top.geometry('400x80')
-            top.title('Renombrar pelicula')
             
-            entry = tk.Entry(top)
-            entry.pack(pady=10, padx=10, fill='x')
-            entry.insert(0,titulo)
-            entry.select_range(0, END)
-            entry.focus()
+    def editar(self):
+        if self.idRow:
+            self.tree.selection_set(self.idRow)
+            idx = self.tree.index(self.idRow)
+            valoresItem = self.list[idx]
+            nombre = valoresItem[0]
+            ci = valoresItem[1]
+            municipio = valoresItem[2]
+            tel = valoresItem[3]
+            horario = valoresItem[4]
+            cat = valoresItem[5]
+            datos = valoresItem[6]
+
+            # ejecutando un toplevel para editar
+            x = 100
+            y = 100
             
-            frameB = tk.Frame(top)
-            frameB.pack()
+            top = Toplevel()
+            w = 340
+            h = 325
+            top.geometry("%dx%d+%d+%d" % (w, h, x + 350, y + 150))
             
+            top.title('Agregando matricula')
+            top.attributes('-topmost', 'true')
+
+            municipios = get_municipios()
+            horarios = get_horarios()
+            cat_code = get_all_cat_code()
+            
+            
+            def check_required_fields():
+                return e_name.get() and e_ci.get()
+            
+            
+                    
             def aceptar():
-                valoresItem[1] = entry.get()
+                guardar.clear()
+                guardar.append(e_name.get())
+                guardar.append(e_ci.get())
+                guardar.append(e_municipio.get())
+                guardar.append(e_tel.get())
+                guardar.append(e_horario.get())
+                guardar.append(e_datos.get('1.0',END))
+                guardar.append(e_categoria.get())
                 
-                self.list.pop(idx)
-                self.list.insert(idx,valoresItem)
-
-                if not db.updateNameById(id=id, new_name=valoresItem[1]):
-                    messagebox.showerror('Nombre repetido',f'Ya existe una pelicula guardada con ese nombre ({valoresItem[1]}). Escriba otro diferente. \n\nTambien considere que debe eliminar los duplicados.')
-                    top.focus()
-                    entry.focus()
-                    return
-                self.change(self.list)
-
+                if not check_required_fields():
+                    messagebox.showerror('Faltan campos requerido','Compruebe que el campo "Nombre(s) y apellidos" y "Carnet de Identidad" esten correctamente llenados')
+                else:
+                    #metodo externo no reutilizable
+                    actualizar_matricula(guardar,ci)
+                    #print(guardar)
+                    top.destroy()
+                    self.change(get_view_matriculas_by_idcurso(get_last_curso_id()))
+            
+            def cancelar():
                 top.destroy()
                 
-            bAceptar = tk.Button(frameB, text='Aceptar', command=aceptar)
-            bAceptar.pack(side='left', padx=10)
             
-            bCancelar = tk.Button(frameB, text='Cancelar', command=top.destroy)
-            bCancelar.pack(side='right')
-
-        
-
-        
-        top.mainloop()
+            guardar = []
+            # labels
+            lb_name = Label(top, text='Nombre(s) y apellidos')
+            lb_ci = Label(top, text='Carnet de Identidad')
+            lb_municipio = Label(top, text='Municipio')
+            lb_tel = Label(top, text='Telefono')
+            lb_horario = Label(top, text='Horario')
+            lb_categoria = Label(top, text='Categoria')
+            lb_datos = Label(top, text='Otros datos')
+            # labels grid
+            lb_name.grid(row=1,column=0, sticky='w', pady=5, padx=10)
+            lb_ci.grid(row=2,column=0, sticky='w', pady=5, padx=10)
+            lb_municipio.grid(row=3,column=0, sticky='w', pady=5, padx=10)
+            lb_tel.grid(row=4,column=0, sticky='w', pady=5, padx=10)
+            lb_horario.grid(row=5,column=0, sticky='w', pady=5, padx=10)
+            lb_categoria.grid(row=6,column=0, sticky='w', pady=5, padx=10)
+            lb_datos.grid(row=7,column=0, sticky='wn', pady=5, padx=10)
             
-    def corregir_datos(self):
-        if self.idRow:
-            self.tree.selection_set(self.idRow)
-            idx = self.tree.index(self.idRow)
-            valoresItem = self.list[idx]
-            id = valoresItem[0]
-            titulo = valoresItem[1]
+            # entrys
+            e_name = Entry(top, width=30)
+            e_ci = Entry(top, width=30)
+            e_municipio = self.combobox(top,municipios, width=27)
+            e_tel = Entry(top, width=10)
+            e_horario = self.combobox(top,horarios, width=27)
+            e_categoria = self.combobox(top,cat_code, width=27)
+            e_datos = Text(top, width=22, height=4)
+            # entrys grid
+            e_name.grid(row=1,column=1, sticky='w', pady=5)
+            e_ci.grid(row=2,column=1, sticky='w', pady=5)
+            e_municipio.grid(row=3,column=1, sticky='w', pady=5)
+            e_tel.grid(row=4,column=1, sticky='w', pady=5)
+            e_horario.grid(row=5,column=1, sticky='w', pady=5)
+            e_categoria.grid(row=6,column=1, sticky='w', pady=5)
+            e_datos.grid(row=7,column=1, sticky='w', pady=5)
+            
+            #valores que carga por defecto
+            e_name.insert(0,nombre)
+            e_ci.insert(0,ci)
+            munic_values = e_municipio['values']
+            coinc = 0
+            for i in range(len(munic_values)):
+                if munic_values[i] == municipio:
+                    coinc = i
+                    break
+            e_municipio.current(coinc)
+            
+            e_tel.insert(0,tel)
+            
+            hor_values = e_horario['values']
+            coinc = 0
+            for i in range(len(hor_values)):
+                if hor_values[i] == horario:
+                    coinc = i
+                    break
+            e_horario.current(coinc)
+                        
+            cat_values = e_categoria['values']
+            coinc = 0
+            for i in range(len(cat_values)):
+                if cat_values[i] == cat:
+                    coinc = i
+                    break
+            e_categoria.current(coinc)
+            
+            e_datos.insert('1.0',datos)
+            
+            e_name.focus_set()
+        
+            frame_bts = Frame(top)
+            frame_bts.grid(row=8, column=1, sticky='e')
+            
+            bt_aceptar = Button(frame_bts, text='Agregar', command=aceptar)
+            bt_aceptar.grid(row=0, column=0, padx=10, pady=10)
+            bt_cancelar = Button(frame_bts, text='Cancelar', command= cancelar)
+            bt_cancelar.grid(row=0, column=1, padx=10, pady=10)
+            
+            
+            
+            
+            
+                
+            top.mainloop()
+            
     
-            pelisOpciones()
-        
-            
-
+    
     def eliminar(self):
         if messagebox.askokcancel('Confirmar eliminacion',
         f'Seguro que desea eliminar la pelicula seleccionada?\n\n(Nota: NO se borrara del ordenador, solo del listado)'):
@@ -252,22 +335,18 @@ class MultiColumnListbox(object):
                 print('index:',index,'id:',id)
                 
                 self.list.pop(idxFinal)
-                db.deleteByIdPeli(id)
                 reductor += 1
 
                 self.change(self.list)
-    
+   
 
     def setupMenuContextual(self):
 
         self.mc = tk.Menu(self.frame, tearoff=0)
-        self.mc.add_command(label='Abrir',command=self.abrir)
-        self.mc.add_separator()
-        self.mc.add_command(label='Renombrar', command=self.renombrar)
-        self.mc.add_command(label='Corregir datos...', command=self.corregir_datos)
+        self.mc.add_command(label='Editar datos...', command=self.editar)
         self.mc.add_separator()
         self.mc.add_command(label='Eliminar', command=self.eliminar)
-     """
+     
 
     def do_popup(self, event):
         self.idRow = ''
@@ -280,29 +359,13 @@ class MultiColumnListbox(object):
 
                 valoresItem = self.list[idx]
 
-                self.actualizarFrameLateral(valoresItem)
+                #self.actualizarFrameLateral(valoresItem)
 
                 self.mc.post(event.x_root, event.y_root)
 
         finally:
             self.mc.grab_release()
 
-    """ def actualizarFrameLateral(self, valoresItem:list):
-    
-        NombFila = valoresItem[1]
-        NombAltFila = valoresItem[2]
-        descrFila = valoresItem[4]
-        castFila = valoresItem[10]
-        
-        rutaFila = valoresItem[9]
-        imagen_file = funciones.scanImgsInDir(rutaFila)
-        imagenYruta = '{}/{}'.format(rutaFila,imagen_file)
-        FrameLateral.setImg(self.frameLateral,imagenYruta, imagen_file)
-            
-        FrameLateral.setNombre(self.frameLateral,texto=NombFila)
-        FrameLateral.setNombreAlt(self.frameLateral,texto=NombAltFila)
-        FrameLateral.setDescripcion(self.frameLateral,texto=descrFila)
-        FrameLateral.setCast(self.frameLateral,texto=castFila) """
 
     def getIdsSelected(self):
         indexes = [self.tree.index(idx) for idx in self.tree.selection()]
@@ -312,11 +375,20 @@ class MultiColumnListbox(object):
             ids.append(valoresItem[0])
         return ids
 
+    def combobox(self, top, valores, width=20, modo=True):
+        estado = 'readonly' if modo else 'normal'
+        box = ttk.Combobox(top, width=width,
+                                state=estado)
+        box['values'] = valores
+        box.current(0)  # Selecciona el primer elemento de la tupla.
+        #box.bind("<<ComboboxSelected>>", combobox_elegir)
+        return box
+    
 
 def sortby(tree, col, descending):
     """sort tree contents when a column header is clicked on"""
     # grab values to sort
-
+    return
     data = [(tree.set(child, col), child) for child in tree.get_children('')]
     # if the data to be sorted is numeric change to float
     #data =  change_numeric(data)
@@ -344,3 +416,4 @@ if __name__ == '__main__':
     frame1 = tk.Frame(root)
     listbox = MultiColumnListbox(frame1, carros_header, lista_carros)
     root.mainloop()
+
