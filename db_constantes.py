@@ -1,5 +1,5 @@
 # CONSTANTES
-DB_NAME = 'db.sqlite3'
+DB_NAME = 'assets/db.sqlite3'
 
 T_ALUMNOS = 't_alumnos'
 T_CURSOS = 't_cursos'

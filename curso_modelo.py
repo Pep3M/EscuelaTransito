@@ -5,7 +5,7 @@ from os import mkdir, path
 class CursoModelo():
 
     def __init__(self, matricula_inicial) -> None:
-        TEMPLATE_CURSO_URL = 'templates/Curso MODELO.xlsx'
+        TEMPLATE_CURSO_URL = 'assets/templates/Curso MODELO.xlsx'
         self.wb = load_workbook(TEMPLATE_CURSO_URL)
         self.ws = self.wb.active
         self.ws['A9'].value = matricula_inicial

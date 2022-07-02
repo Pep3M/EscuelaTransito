@@ -63,7 +63,7 @@ def elegir_curso(event):
 
 root = Tk()
 root.title('Transito matriculas')
-root.iconbitmap('logo.ico')
+root.iconbitmap('assets/imgs/logo.ico')
 root.minsize(width=1200, height=350)
 
 font_big = font.Font(family='Helvetica', size= '14')
@@ -80,7 +80,7 @@ body_frame.pack(expand=True, fill='both')
 frame_superior = Frame(body_frame, background=COLOR_DARK_BG, height=50)
 frame_superior.pack(fill='x', anchor=E)
 
-img = PhotoImage(file='logo.png')
+img = PhotoImage(file='assets/imgs/logo.png')
 lb_logo = Label(frame_superior, image=img, background=COLOR_DARK_BG)
 lb_logo.grid(row=0, column=0, padx=15, pady=5)
 Label(frame_superior,background=COLOR_DARK_BG, text='').grid(row=0, column=1, padx=10)
