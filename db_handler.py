@@ -8,7 +8,7 @@ from datetime import datetime
 def conexion_db(func):
 
     def wrapper(*args, **kwargs):
-        db = connect('db.sqlite3')
+        db = connect(DB_NAME)
         f = func(db=db)
         db.commit()
         db.close()
@@ -187,8 +187,8 @@ def datos_iniciales(db):
     # horario inicial
     horarios = [
         ['9:00 AM - 11:00 AM', 'Horario de la mañana'],
-        ['5:00 PM - 7:00 PM', 'Horario de la tarde'],
         ['2:00 PM - 4:00 PM', 'WhatsApp'],
+        ['5:00 PM - 7:00 PM', 'Horario de la tarde'],
     ]
     for horario in horarios:
         sql = '''
@@ -632,7 +632,7 @@ def get_idalumnos_by_idhorario_idcurso(id_horario, id_curso):
         ids = [item[0] for item in fetch]
         return ids
 
-    
+#print(get_idalumnos_by_idhorario_idcurso(1,1))
 
 def set_matriculas_by_id_horario_idcurso(id_horario, id_curso, matricula_inicial:int):
     db = connect(DB_NAME)
@@ -646,16 +646,17 @@ def set_matriculas_by_id_horario_idcurso(id_horario, id_curso, matricula_inicial
     '''
     
     matricula = matricula_inicial
-    for id_alum in ids_alumnos:
-        parm = [matricula, id_horario, id_alum]
-        
-        cursor.execute(sql, parm)
-        db.commit()
-        
-        matricula += 1
+    if ids_alumnos:
+        for id_alum in ids_alumnos:
+            
+            parm = [matricula, id_horario, id_alum]
+            
+            cursor.execute(sql, parm)
+            db.commit()
+            
+            matricula += 1
         
     db.close()
-
     return matricula
 
 
