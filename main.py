@@ -1,4 +1,4 @@
-from tkinter import E, X, Button, Frame, Label, Tk, Toplevel, font
+from tkinter import E, X, Button, Frame, Label, PhotoImage, Tk, Toplevel, font
 from tkinter.ttk import Combobox
 from db_handler import get_all_cat_code, get_cursos, get_horarios, get_idcurso_by_curso_year, get_municipios, get_view_matriculas_by_idcurso
 from funciones import create_excel_by_curso, init_multilist_matriculas
@@ -63,6 +63,7 @@ def elegir_curso(event):
 
 root = Tk()
 root.title('Transito matriculas')
+root.iconbitmap('logo.ico')
 root.minsize(width=1200, height=350)
 
 font_big = font.Font(family='Helvetica', size= '14')
@@ -79,11 +80,14 @@ body_frame.pack(expand=True, fill='both')
 frame_superior = Frame(body_frame, background=COLOR_DARK_BG, height=50)
 frame_superior.pack(fill='x', anchor=E)
 
-Label(frame_superior,background=COLOR_DARK_BG, text='').grid(row=0, column=0, padx=550)
-Label(frame_superior, text='Curso', background=COLOR_DARK_BG, foreground=COLOR_FB, font=font_big).grid(row=0, column=1)
+img = PhotoImage(file='logo.png')
+lb_logo = Label(frame_superior, image=img, background=COLOR_DARK_BG)
+lb_logo.grid(row=0, column=0, padx=15, pady=5)
+Label(frame_superior,background=COLOR_DARK_BG, text='').grid(row=0, column=1, padx=10)
+Label(frame_superior, text='Curso', background=COLOR_DARK_BG, foreground=COLOR_FB, font=font_big).grid(row=0, column=2)
 
 cb_curso = Combobox(frame_superior, width=8, state='readonly', font=font_big)
-cb_curso.grid(row=0,column=2, sticky='e', padx=10, pady=10)
+cb_curso.grid(row=0,column=3, sticky='e', padx=10, pady=10)
 valores_by_cbcursos(cb_curso)
 cb_curso.bind("<<ComboboxSelected>>", elegir_curso)
 

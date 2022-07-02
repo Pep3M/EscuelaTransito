@@ -3,3 +3,4 @@ export/
 __pycache__/
 borradores/
 .vscode/
+.qt_for_python/
