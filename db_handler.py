@@ -6,12 +6,14 @@ from datetime import datetime
 
 # Decorador, para las conexiones a la DB
 def conexion_db(func):
+
     def wrapper(*args, **kwargs):
         db = connect('db.sqlite3')
         f = func(db=db)
         db.commit()
         db.close()
         return f
+
     return wrapper
 
 
@@ -74,7 +76,7 @@ def create_tables(db):
     CREATE TABLE IF NOT EXISTS {T_MATRICULAS} (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         {FECHA} VARCHAR(20),
-        {MATRICULA} INTEGER UNIQUE,
+        {MATRICULA} INTEGER,
         {ID_CURSO} INTEGER,
         {ID_ALUMNO} INTEGER,
         {ID_CATEGORIA_LIC} INTEGER,
@@ -99,7 +101,7 @@ def create_tables(db):
     {T_CATEGORIA_LIC}.{CODIGO_CAT},
     {T_MATRICULAS}.{DATOS},
     {T_MATRICULAS}.{ID_CURSO},
-    {T_MATRICULAS}..id
+    {T_MATRICULAS}.id
     FROM {T_MATRICULAS}
     INNER JOIN {T_ALUMNOS} on {ID_ALUMNO}={T_ALUMNOS}.id
     INNER JOIN {T_HORARIOS} on {ID_HORARIO}={T_HORARIOS}.id
@@ -113,7 +115,10 @@ def datos_iniciales(db):
 
     # llenando municipios
     municipios = [
-        'Playa', 'Plaza de la Revolución', 'Centro Habana', 'La Habana Vieja', 'Regla', 'La Habana del Este', 'Guanabacoa', 'San Miguel del Padrón', 'Diez de Octubre', 'Cerro', 'Marianao', 'La Lisa', 'Boyeros', 'Arroyo Naranjo', 'Cotorro'
+        'Playa', 'Plaza de la Revolución', 'Centro Habana', 'La Habana Vieja',
+        'Regla', 'La Habana del Este', 'Guanabacoa', 'San Miguel del Padrón',
+        'Diez de Octubre', 'Cerro', 'Marianao', 'La Lisa', 'Boyeros',
+        'Arroyo Naranjo', 'Cotorro'
     ]
     for municipio in municipios:
         sql = '''
@@ -125,19 +130,43 @@ def datos_iniciales(db):
 
     # llenando categorias
     categorias = [
-        ['A', 'Motocicletas', 'motocicletas y otros vehículos de motor similares'],
+        [
+            'A', 'Motocicletas',
+            'motocicletas y otros vehículos de motor similares'
+        ],
         ['A-1', 'Ciclomotor', 'los ciclomotores'],
-        ['B', 'Automovil', 'vehículos de motor no comprendidos en la categoría “A”, con peso máximo autorizado inferior a 3500 kilogramos y con un número de asientos que, sin contar el del conductor, no exceda de ocho y a arrastrar un remolque ligero.'],
-        ['C', 'Camion (mas de 7500Kg)', 'vehículos de motor dedicados al transporte de carga, con un peso máximo autorizado superior a 3500 kilogramos y a arrastrar un remolque ligero'],
-        ['C-1', 'Camion (hasta 7500Kg)', 'los vehículos de motor dedicados al transporte de carga, con un peso máximo autorizado que exceda de 3500 kilogramos y hasta 7500 Kilogramos y arrastrar un remolque ligero.'],
-        ['D', 'Omnibus (mas de 17 asientos)',
-         'vehículos de motor destinados al transporte de personas, con más de ocho asientos, sin contar el del conductor.'],
-        ['D-1', 'Microbus (hasta 17 asientos)',
-         'los vehículos de motor destinados al transporte de personas, con más de ocho asientos y no exceda de dieciséis, sin contar el del conductor.'],
-        ['E', 'Articulado', 'conjunto de vehículos cuyo vehículo de tracción esté comprendido en cualquiera de las categorías y subcategorías “B”, “C”, “C-1”, “D” y “D-1”, para los cuales está habilitado el conductor, pero que por su naturaleza no quede incluido en ninguna de ellas. Se incluyen, además, en esta categoría a los ómnibus articulados..'],
-        ['F', 'Agroindustrial y de la construccion', 'vehículos agrícolas de motor, especializados de la construcción, industriales, de carga o descarga, o cualesquiera otros que reuniendo los requisitos exigidos para circular por las vías, no clasifican en ninguna de las anteriores categorías de licencia de conducción.'],
-        ['FE', 'Tractor con remolques',
-         'vehículos contenidos en el numeral anterior, cuando circulen con uno o más remolques'],
+        [
+            'B', 'Automovil',
+            'vehículos de motor no comprendidos en la categoría “A”, con peso máximo autorizado inferior a 3500 kilogramos y con un número de asientos que, sin contar el del conductor, no exceda de ocho y a arrastrar un remolque ligero.'
+        ],
+        [
+            'C', 'Camion (mas de 7500Kg)',
+            'vehículos de motor dedicados al transporte de carga, con un peso máximo autorizado superior a 3500 kilogramos y a arrastrar un remolque ligero'
+        ],
+        [
+            'C-1', 'Camion (hasta 7500Kg)',
+            'los vehículos de motor dedicados al transporte de carga, con un peso máximo autorizado que exceda de 3500 kilogramos y hasta 7500 Kilogramos y arrastrar un remolque ligero.'
+        ],
+        [
+            'D', 'Omnibus (mas de 17 asientos)',
+            'vehículos de motor destinados al transporte de personas, con más de ocho asientos, sin contar el del conductor.'
+        ],
+        [
+            'D-1', 'Microbus (hasta 17 asientos)',
+            'los vehículos de motor destinados al transporte de personas, con más de ocho asientos y no exceda de dieciséis, sin contar el del conductor.'
+        ],
+        [
+            'E', 'Articulado',
+            'conjunto de vehículos cuyo vehículo de tracción esté comprendido en cualquiera de las categorías y subcategorías “B”, “C”, “C-1”, “D” y “D-1”, para los cuales está habilitado el conductor, pero que por su naturaleza no quede incluido en ninguna de ellas. Se incluyen, además, en esta categoría a los ómnibus articulados..'
+        ],
+        [
+            'F', 'Agroindustrial y de la construccion',
+            'vehículos agrícolas de motor, especializados de la construcción, industriales, de carga o descarga, o cualesquiera otros que reuniendo los requisitos exigidos para circular por las vías, no clasifican en ninguna de las anteriores categorías de licencia de conducción.'
+        ],
+        [
+            'FE', 'Tractor con remolques',
+            'vehículos contenidos en el numeral anterior, cuando circulen con uno o más remolques'
+        ],
     ]
     for categoria in categorias:
         sql = '''
@@ -174,7 +203,7 @@ def datos_iniciales(db):
 if not path.exists(DB_NAME):
     create_tables()
     datos_iniciales()
-# create_tables()
+create_tables()
 
 # Consultas (SELECTS)
 
@@ -182,8 +211,8 @@ if not path.exists(DB_NAME):
 @conexion_db
 def get_all_alumnos(db: Connection):
     cursor = db.cursor()
-    sql = 'SELECT %s, %s, %s, %s, %s FROM %s' % (
-        FULL_NAME, CI, MUNICIPIO, TELEFONO, DATOS, T_ALUMNOS)
+    sql = 'SELECT %s, %s, %s, %s, %s FROM %s' % (FULL_NAME, CI, MUNICIPIO,
+                                                 TELEFONO, DATOS, T_ALUMNOS)
     cursor.execute(sql)
     elementos = cursor.fetchall()
     return elementos
@@ -219,6 +248,22 @@ def get_id_alumno_by_ci(ci):
     db.close()
     return id_alumno
 
+def get_alumnos_for_excel(id_curso, horario):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+
+    sql2 = f'''
+    SELECT {FULL_NAME},{CI} FROM {V_MATRICULAS} WHERE {HORARIO}=? AND {ID_CURSO}=?
+    '''
+    param2 = [horario, id_curso]
+
+    cursor.execute(sql2, param2)
+    alumnos = cursor.fetchall()
+
+    db.close()
+    return alumnos
+
+    
 
 @conexion_db
 def get_municipios(db):
@@ -236,8 +281,33 @@ def get_horarios(db: Connection):
     sql = 'SELECT %s FROM %s;' % (HORARIO, T_HORARIOS)
     cursor.execute(sql)
     elementos = cursor.fetchall()
-    municipios = [elemento[0] for elemento in elementos]
-    return municipios
+    horarios = [elemento[0] for elemento in elementos]
+    return horarios
+
+@conexion_db
+def get_id_horarios(db: Connection):
+    cursor = db.cursor()
+    sql = 'SELECT id FROM %s;' % (T_HORARIOS)
+    cursor.execute(sql)
+    elementos = cursor.fetchall()
+    id_horarios = [elemento[0] for elemento in elementos]
+    return id_horarios
+
+
+def get_matr_init_by_id(id_curso) -> int:
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+    
+    sql = f'''
+    SELECT {MATRICULA_INIT} FROM {T_CURSOS} WHERE id=?;
+    '''
+    parm = [id_curso]
+
+    cursor.execute(sql, parm)
+    matr_ini = cursor.fetchone()[0]
+    db.close()
+    return int(matr_ini)
+    
 
 
 @conexion_db
@@ -272,8 +342,9 @@ def get_idcurso_by_curso_year(curso, year):
 
     return id
 
+
 @conexion_db
-def get_cursos(db:Connection):
+def get_cursos(db: Connection):
     cursor = db.cursor()
 
     sql = f'''
@@ -321,6 +392,7 @@ def get_id_horario(horario):
     id = cursor.fetchone()[0]
     db.close()
     return id
+
 
 
 def get_curso_by_id(id):
@@ -415,6 +487,7 @@ def get_view_matriculas_by_idcurso(id_curso):
 
 # INSERTS
 
+
 def agregar_alumno(datos_alumno):
     db = connect(DB_NAME)
     cursor = db.cursor()
@@ -433,7 +506,7 @@ def agregar_alumno(datos_alumno):
     return id_alumno
 
 
-def actualizar_alumno(datos_alumno:list, old_ci):
+def actualizar_alumno(datos_alumno: list, old_ci):
     db = connect(DB_NAME)
     cursor = db.cursor()
 
@@ -476,10 +549,14 @@ def agregar_matricula(datos_matricula: list, curso, year):
     sql = '''
     INSERT OR IGNORE INTO %s (%s,%s,%s,%s,%s,%s)
     VALUES (?,?,?,?,?,?)
-    ''' % (T_MATRICULAS, FECHA, ID_CURSO, ID_ALUMNO, ID_CATEGORIA_LIC, ID_HORARIO, DATOS)
+    ''' % (T_MATRICULAS, FECHA, ID_CURSO, ID_ALUMNO, ID_CATEGORIA_LIC,
+           ID_HORARIO, DATOS)
 
-    param = [str(datetime.now())[0:10], id_curso, id_alumno, get_id_cat(
-        categoria), get_id_horario(horario), datos]
+    param = [
+        str(datetime.now())[0:10], id_curso, id_alumno,
+        get_id_cat(categoria),
+        get_id_horario(horario), datos
+    ]
 
     cursor.execute(sql, param)
     db.commit()
@@ -496,12 +573,10 @@ def actualizar_matricula(datos_matricula: list, old_ci, id_curso):
     datos = datos_matricula[5]
     categoria = datos_matricula[6]
 
-    
     # actualizar datos de alumnos, sin el horario
     datos_alumnos = [nombre, ci, municipio, telefono, datos]
     id_alumno = actualizar_alumno(datos_alumnos, old_ci)
 
-    
     db = connect(DB_NAME)
     cursor = db.cursor()
 
@@ -510,7 +585,10 @@ def actualizar_matricula(datos_matricula: list, old_ci, id_curso):
     WHERE {ID_ALUMNO}=? AND {ID_CURSO}=?;
     '''
 
-    param = [get_id_cat(categoria), get_id_horario(horario), datos, id_alumno, id_curso]
+    param = [
+        get_id_cat(categoria),
+        get_id_horario(horario), datos, id_alumno, id_curso
+    ]
 
     cursor.execute(sql, param)
     db.commit()
@@ -518,11 +596,11 @@ def actualizar_matricula(datos_matricula: list, old_ci, id_curso):
 
 
 def eliminar_matr_by_ci_and_curso(ci, curso, year):
-    
+
     id_curso = get_idcurso_by_curso_year(curso, year)
-    
+
     id_alumno = get_id_alumno_by_ci(ci)
-    
+
     db = connect(DB_NAME)
     cursor = db.cursor()
 
@@ -531,14 +609,56 @@ def eliminar_matr_by_ci_and_curso(ci, curso, year):
     WHERE {ID_ALUMNO}=? AND {ID_CURSO}=?
     '''
     param = [id_alumno, id_curso]
-    
+
     cursor.execute(sql, param)
 
     db.commit()
     db.close()
+
+
+def get_idalumnos_by_idhorario_idcurso(id_horario, id_curso):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+
+    sql = f'''
+    SELECT {ID_ALUMNO} FROM {T_MATRICULAS}
+    WHERE {ID_HORARIO}=? AND {ID_CURSO}=?;
+    '''
+    parm = [id_horario, id_curso]
+
+    cursor.execute(sql,parm)
+    fetch = cursor.fetchall()
+    if fetch:
+        ids = [item[0] for item in fetch]
+        return ids
+
     
+
+def set_matriculas_by_id_horario_idcurso(id_horario, id_curso, matricula_inicial:int):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+
+    ids_alumnos = get_idalumnos_by_idhorario_idcurso(id_horario, id_curso)
+
+    sql = f'''
+    UPDATE {T_MATRICULAS} SET {MATRICULA}=?
+    WHERE {ID_HORARIO}=? AND {ID_ALUMNO}=?;
+    '''
     
-    
+    matricula = matricula_inicial
+    for id_alum in ids_alumnos:
+        parm = [matricula, id_horario, id_alum]
+        
+        cursor.execute(sql, parm)
+        db.commit()
+        
+        matricula += 1
+        
+    db.close()
+
+    return matricula
+
+
 
 #actualizar_matricula(['Esteban Lopez Abreu', '54011231432', 'Centro Habana', '54321243', '9:00 AM - 11:00 AM', 'asdasd\n', 'A-1'],'540112314321')
 # print(select_alumno_by_ci(ci='811232145765'))

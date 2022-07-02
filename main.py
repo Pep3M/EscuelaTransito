@@ -1,8 +1,13 @@
-from tkinter import E, Button, Frame, Label, Tk, Toplevel
+from tkinter import E, X, Button, Frame, Label, Tk, Toplevel, font
 from tkinter.ttk import Combobox
 from db_handler import get_all_cat_code, get_cursos, get_horarios, get_idcurso_by_curso_year, get_municipios, get_view_matriculas_by_idcurso
-from funciones import init_multilist_matriculas
+from funciones import create_excel_by_curso, init_multilist_matriculas
 from tkform_new_matr import Form_new_matric
+
+COLOR_DARK_BG = '#1b1e2b'
+COLOR_SOFT_BG = '#313446'
+COLOR_FB = '#a3a9c9'
+COLOR_FB_SOFT = '#444444'
 
 # Funciones #
 
@@ -27,6 +32,8 @@ def agregar_matricula():
 
     top.mainloop()
 
+def crear_modelos():
+    create_excel_by_curso(cb_curso.get())
 
 def valores_by_cbcursos(cb:Combobox):
     valores = []
@@ -58,6 +65,8 @@ root = Tk()
 root.title('Transito matriculas')
 root.minsize(width=1200, height=350)
 
+font_big = font.Font(family='Helvetica', size= '14')
+font_middle = font.Font(family='Helvetica', size= '12')
 
 
 # - Frame body
@@ -67,13 +76,13 @@ body_frame.pack(expand=True, fill='both')
 
 
 # - Frame superior
-frame_superior = Frame(body_frame, background='#1b1e2b', height=50)
+frame_superior = Frame(body_frame, background=COLOR_DARK_BG, height=50)
 frame_superior.pack(fill='x', anchor=E)
 
-Label(frame_superior,background='#1b1e2b', text='').grid(row=0, column=0, padx=550)
-Label(frame_superior, text='Curso', background='#1b1e2b', foreground='#a3a9c9', font=('Helvetica 14')).grid(row=0, column=1)
+Label(frame_superior,background=COLOR_DARK_BG, text='').grid(row=0, column=0, padx=550)
+Label(frame_superior, text='Curso', background=COLOR_DARK_BG, foreground=COLOR_FB, font=font_big).grid(row=0, column=1)
 
-cb_curso = Combobox(frame_superior, background='blue', width=8, state='readonly', font=('Helvetica 14'))
+cb_curso = Combobox(frame_superior, width=8, state='readonly', font=font_big)
 cb_curso.grid(row=0,column=2, sticky='e', padx=10, pady=10)
 valores_by_cbcursos(cb_curso)
 cb_curso.bind("<<ComboboxSelected>>", elegir_curso)
@@ -82,17 +91,38 @@ cb_curso.bind("<<ComboboxSelected>>", elegir_curso)
 
 # - Frame de botones (lateral)
 buttons_frame = Frame(body_frame, width=150, padx=5,
-                      pady=5, background='#1b1e2b')
+                      pady=5, background=COLOR_DARK_BG)
 buttons_frame.pack(fill='y', side='left')
-
+Label(buttons_frame,text='Matriculas', background=COLOR_DARK_BG, foreground=COLOR_FB_SOFT).pack()
 bt_new_matr = Button(buttons_frame,
                      text='Nueva matricula',
-                     background='#313446',
-                     foreground='#a3a9c9',
+                     background=COLOR_SOFT_BG,
+                     foreground=COLOR_FB,
+                     font=font_middle,
                      command=agregar_matricula)
-bt_new_matr.pack()
+bt_new_matr.pack(padx=3, pady=5, fill=X)
+Label(buttons_frame,text='   ', background=COLOR_DARK_BG, foreground=COLOR_FB_SOFT).pack(pady=1) # ---- separador ----
 
+Label(buttons_frame,text='Excel', background=COLOR_DARK_BG, foreground=COLOR_FB_SOFT).pack()
+bt_crear_modelos = Button(buttons_frame,
+                     text='Crear modelos',
+                     background=COLOR_SOFT_BG,
+                     foreground=COLOR_FB,
+                     font=font_middle,
+                     command=crear_modelos
+                     )
+bt_crear_modelos.pack(padx=3, pady=5)
+Label(buttons_frame,text='   ', background=COLOR_DARK_BG, foreground=COLOR_FB_SOFT).pack(pady=1) # ---- separador ----
 
+Label(buttons_frame,text='Cursos', background=COLOR_DARK_BG, foreground=COLOR_FB_SOFT).pack()
+bt_new_curso = Button(buttons_frame,
+                     text='Nuevo curso',
+                     background=COLOR_SOFT_BG,
+                     foreground=COLOR_FB,
+                     font=font_middle,
+                     command=agregar_matricula
+                     )
+bt_new_curso.pack(padx=3, pady=5, fill=X)
 
 # - Frame del treeview (principal)
 tree_frame = Frame(body_frame)

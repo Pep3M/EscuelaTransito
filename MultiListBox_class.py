@@ -23,7 +23,7 @@ class MultiColumnListbox(object):
             column_header (list): Una lista de cada encabezado
             list (list[tuple | list]): Una lista de tuplas. Cada tupla representa una fila
         """
-
+        self.myFont = ('Arial 10')
         self.tree = None
         self.curso = '10-2022'  # inicial
         self.frame = frame_container
@@ -47,6 +47,7 @@ class MultiColumnListbox(object):
 
         style.configure('Treeview',
                         background='#292d3e',
+                        font=self.myFont,
                         foreground='white',
                         fieldbackground='#292d3e')
 
