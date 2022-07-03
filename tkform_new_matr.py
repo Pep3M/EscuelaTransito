@@ -1,6 +1,6 @@
 
 from msilib.schema import ComboBox
-from tkinter import END, Button, Entry, Frame, Label, StringVar, Text, Tk
+from tkinter import END, Button, Entry, Frame, Label, StringVar, Text, Tk, font
 from tkinter.messagebox import showerror
 from tkinter.ttk import Combobox
 from MultiListBox_class import MultiColumnListbox
@@ -16,6 +16,10 @@ class Form_new_matric:
         self.frame_container = frame_container
         self.treeview = treeview
         self.guardar = []
+        # StringVars
+        self.ci_sv = StringVar()
+        self.ci_sv.trace('w', self.callback_ci_entry)
+        self.name_sv = StringVar()
         # labels
         self.lb_name = Label(self.frame_container, text='Nombre(s) y apellidos')
         self.lb_ci = Label(self.frame_container, text='Carnet de Identidad')
@@ -34,8 +38,8 @@ class Form_new_matric:
         self.lb_datos.grid(row=7,column=0, sticky='wn', pady=5, padx=10)
         
         # entrys
-        self.e_name = Entry(self.frame_container, width=30)
-        self.e_ci = Entry(self.frame_container, width=30)
+        self.e_name = Entry(self.frame_container, textvariable=self.name_sv, width=30)
+        self.e_ci = Entry(self.frame_container, textvariable= self.ci_sv, width=30)
         self.e_municipio = self.combobox(municipios, width=27)
         self.e_tel = Entry(self.frame_container, width=10)
         self.e_horario = self.combobox(horarios, width=27)
@@ -60,6 +64,8 @@ class Form_new_matric:
         self.bt_cancelar = Button(self.frame_bts, text='Cancelar', command= self.cancelar)
         self.bt_cancelar.grid(row=0, column=1, padx=10, pady=10)
         
+        self.e_name.bind('<FocusOut>', self.event_change_name)
+        #self.e_ci.bind('<KeyRelease>', self.event_ci_entry)
     
     def aceptar(self):
         self.guardar.clear()
@@ -101,14 +107,34 @@ class Form_new_matric:
 
     def check_required_fields(self):
         return self.e_name.get() and self.e_ci.get()
+    
+    # ---- BIND METHODS ----
+    def event_change_name(self, e):
+        capitalizado = self.capitalizar_palabras(self.name_sv.get())
+        self.e_name.delete(0,'end')
+        self.e_name.insert(0,capitalizado)
+    
+    def capitalizar_palabras(self, frase:str):
+        palabras:list[str] = frase.split(' ')
+        mayus_palabras = [palabra.capitalize() for palabra in palabras]
+        return ' '.join(mayus_palabras)
 
-
+    def callback_ci_entry(self, *args):
+        ci = self.ci_sv.get()
+        if not ci == "" and not len(ci) == 11 or not ci.isdigit():
+            self.e_ci.config(foreground='red')
+        else:
+            self.e_ci.config(foreground='black')
 
 if __name__ == '__main__':
-    root = Tk()
+
+
+    
+    
+    """ root = Tk()
     munic = get_municipios()
     form = Form_new_matric(root, munic)
     root.mainloop()
     
     if len(form.guardar) > 0:
-        print(form.guardar[1])
+        print(form.guardar[1]) """

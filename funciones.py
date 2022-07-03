@@ -2,9 +2,25 @@ from os import mkdir, path
 from tkinter import filedialog
 from MultiListBox_class import MultiColumnListbox
 from curso_modelo import CursoModelo
-from db_handler import get_all_alumnos, get_alumnos_for_excel, get_horario_by_id, get_id_horarios, get_idcurso_by_curso_year, get_matr_init_by_id, get_view_matriculas_by_idcurso, set_matriculas_by_id_horario_idcurso
+from db_handler import get_all_alumnos, get_alumnos_for_excel, get_fecha_inicio_fin_by_idcurso, get_horario_by_id, get_id_horarios, get_idcurso_by_curso_year, get_matr_init_by_id, get_view_matriculas_by_idcurso, set_matriculas_by_id_horario_idcurso
 from cmd_abrir_carpeta_explorer import abrirCarpeta
 from db_constantes import *
+
+MESES = [
+    'meses',
+    'enero',
+    'febrero',
+    'marzo',
+    'abril',
+    'mayo',
+    'junio',
+    'julio',
+    'agosto',
+    'septiembre',
+    'octubre',
+    'noviembre',
+    'diciembre'
+]
 
 def init_multilist_alumnos(frame_container):
     header_alumnos = [
@@ -96,7 +112,24 @@ def create_excel_by_curso(curso:str):
     ruta = filedialog.askdirectory(title='Elige donde desea crear la carpeta con los documentos guardados')
     
     if ruta:
-        ruta_export = path.join(ruta,curso)
+        # tomando fecha y formateando para la carpeta conenedora de modelos
+        fechas = get_fecha_inicio_fin_by_idcurso(idcurso)
+        fe_inicio = str(fechas[0]).split('/')
+        fe_fin = str(fechas[1]).split('/')
+        
+        d_inicio = int(fe_inicio[0])
+        m_inicio = MESES[int(fe_inicio[1])]
+        a_inicio = int(fe_inicio[2])
+        d_fin = int(fe_fin[0])
+        m_fin = MESES[int(fe_fin[1])]
+        a_fin = int(fe_fin[2])
+        
+        if m_inicio == m_fin:
+            nombre_carpeta_final = f'{curso} Curso del {d_inicio} al {d_fin} de {m_fin}'
+        else:
+            nombre_carpeta_final = f'{curso} Curso del {d_inicio} de {m_inicio} al {d_fin} de {m_fin}'
+        
+        ruta_export = path.join(ruta,nombre_carpeta_final)
         if not path.exists(ruta_export): mkdir(ruta_export)
         
         for i, cur in enumerate(cursos_xlsx):

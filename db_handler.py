@@ -39,13 +39,14 @@ def create_tables(db):
         %s VARCHAR(30),
         %s INTEGER,
         %s INTEGER,
+        %s VARCHAR(15),
+        %s VARCHAR(15),
         %s VARCHAR(100))
-    ''' % (T_CURSOS, NOMBRE_CURSO, MATRICULA_INIT, YEAR, DATOS)
+    ''' % (T_CURSOS, NOMBRE_CURSO, MATRICULA_INIT, YEAR, FECHA_INICIAL, FECHA_FINAL, DATOS)
     db.cursor().execute(sql)
 
     # TABLA HORARIOS
-    sql = '''
-    CREATE TABLE IF NOT EXISTS %s (
+    sql = '''CREATE TABLE IF NOT EXISTS %s (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         %s VARCHAR(30),
         %s VARCHAR(100))
@@ -180,8 +181,8 @@ def datos_iniciales(db):
     sql = '''
     INSERT OR IGNORE INTO %s (%s,%s,%s)
     VALUES (?,?,?)
-    ''' % (T_CURSOS, NOMBRE_CURSO, MATRICULA_INIT, YEAR)
-    param = ['10', 615, 2022]
+    ''' % (T_CURSOS, NOMBRE_CURSO, MATRICULA_INIT, YEAR, FECHA_INICIAL, FECHA_FINAL)
+    param = ['10', 615, 2022, '08/07/2022', '20/07/2022']
     db.cursor().execute(sql, param)
 
     # horario inicial
@@ -198,12 +199,26 @@ def datos_iniciales(db):
         param = [horario[0], horario[1]]
         db.cursor().execute(sql, param)
 
+@conexion_db
+def agregar_fecha_al_horario(db:Connection):
+    sql = f'''ALTER TABLE {T_CURSOS} 
+    ADD COLUMN [{FECHA_INICIAL}] [VARCHAR(15)];'''
+    sql2 = f'''ALTER TABLE {T_CURSOS} 
+    ADD COLUMN [{FECHA_FINAL}] [VARCHAR(15)];'''
+    
+    cursor = db.cursor()
+    try:
+        cursor.execute(sql)
+        cursor.execute(sql2)
+    except: 
+        print('Ya la tabla horario tiene la fecha de inicio y final como campos')
 
 # datos iniciales cuando no existe la DB
 if not path.exists(DB_NAME):
     create_tables()
     datos_iniciales()
 create_tables()
+agregar_fecha_al_horario()
 
 # Consultas (SELECTS)
 
@@ -659,6 +674,21 @@ def set_matriculas_by_id_horario_idcurso(id_horario, id_curso, matricula_inicial
     db.close()
     return matricula
 
+def get_fecha_inicio_fin_by_idcurso(id_curso):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+
+    sql = f'''
+    SELECT {FECHA_INICIAL},{FECHA_FINAL} FROM {T_CURSOS}
+    WHERE id=?
+    '''
+    parm = [id_curso]
+    cursor.execute(sql,parm)
+    
+    fetch = cursor.fetchone()
+    if fetch:
+        return fetch
+    return False
 
 
 #actualizar_matricula(['Esteban Lopez Abreu', '54011231432', 'Centro Habana', '54321243', '9:00 AM - 11:00 AM', 'asdasd\n', 'A-1'],'540112314321')

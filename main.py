@@ -65,7 +65,7 @@ root = Tk()
 root.title('Transito matriculas')
 root.iconbitmap('assets/imgs/logo.ico')
 root.minsize(width=1200, height=350)
-
+root.geometry('1200x650+50+10')
 font_big = font.Font(family='Helvetica', size= '14')
 font_middle = font.Font(family='Helvetica', size= '12')
 

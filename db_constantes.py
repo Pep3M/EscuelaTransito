@@ -22,6 +22,8 @@ HORARIO = 'horario'
 NOMBRE_CURSO = 'nombre_curso'
 MATRICULA_INIT = 'matricula_init'
 YEAR = 'year'
+FECHA_INICIAL = 'fecha_inicial'
+FECHA_FINAL = 'fecha_final'
 
 # T_HORARIOS
 HORARIO = 'horario'
