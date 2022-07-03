@@ -80,10 +80,29 @@ def actualizar_treeview(treeview:MultiColumnListbox):
     treeview.change(matriculas_lista)
     
     
+def formato_fecha_natural(fechas:list | tuple):
+    fe_inicio = str(fechas[0]).split('/')
+    fe_fin = str(fechas[1]).split('/')
+    
+    d_inicio = int(fe_inicio[0])
+    m_inicio = MESES[int(fe_inicio[1])]
+    
+    d_fin = int(fe_fin[0])
+    m_fin = MESES[int(fe_fin[1])]
+        
+    if m_inicio == m_fin:
+        return f'{d_inicio} al {d_fin} de {m_fin}'
+    else:
+        return f'{d_inicio} de {m_inicio} al {d_fin} de {m_fin}'
+        
+        
+    
 def create_excel_by_curso(curso:str):
     sc = curso.split('-')
     idcurso = get_idcurso_by_curso_year(sc[0], sc[1])
     matr_init = get_matr_init_by_id(idcurso)
+    fechas = get_fecha_inicio_fin_by_idcurso(idcurso)
+    
     
     # primero vamos a guardar en db las matriculas por horarios
     num_matricula = matr_init
@@ -103,7 +122,7 @@ def create_excel_by_curso(curso:str):
         alumnos = get_alumnos_for_excel(idcurso,horario)
         
         cursoxls = CursoModelo(matricula_inicial)
-        cursoxls.fecha_horario('1/06/2022','10/06/2022', horario)
+        cursoxls.fecha_horario(fechas[0],fechas[1], horario)
         cursoxls.agregar_lote_matriculas(alumnos)
         
         cursos_xlsx.append(cursoxls)
@@ -113,21 +132,8 @@ def create_excel_by_curso(curso:str):
     
     if ruta:
         # tomando fecha y formateando para la carpeta conenedora de modelos
-        fechas = get_fecha_inicio_fin_by_idcurso(idcurso)
-        fe_inicio = str(fechas[0]).split('/')
-        fe_fin = str(fechas[1]).split('/')
-        
-        d_inicio = int(fe_inicio[0])
-        m_inicio = MESES[int(fe_inicio[1])]
-        a_inicio = int(fe_inicio[2])
-        d_fin = int(fe_fin[0])
-        m_fin = MESES[int(fe_fin[1])]
-        a_fin = int(fe_fin[2])
-        
-        if m_inicio == m_fin:
-            nombre_carpeta_final = f'{curso} Curso del {d_inicio} al {d_fin} de {m_fin}'
-        else:
-            nombre_carpeta_final = f'{curso} Curso del {d_inicio} de {m_inicio} al {d_fin} de {m_fin}'
+        nombre_carpeta_final = f'{curso} Curso del {formato_fecha_natural(fechas)}'
+
         
         ruta_export = path.join(ruta,nombre_carpeta_final)
         if not path.exists(ruta_export): mkdir(ruta_export)

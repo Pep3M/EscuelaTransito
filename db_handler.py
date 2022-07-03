@@ -217,8 +217,8 @@ def agregar_fecha_al_horario(db:Connection):
 if not path.exists(DB_NAME):
     create_tables()
     datos_iniciales()
-create_tables()
-agregar_fecha_al_horario()
+#create_tables()
+#agregar_fecha_al_horario()
 
 # Consultas (SELECTS)
 

@@ -1,7 +1,7 @@
-from tkinter import E, X, Button, Frame, Label, PhotoImage, Tk, Toplevel, font
+from tkinter import E, X, Button, Frame, Label, PhotoImage, StringVar, Tk, Toplevel, font
 from tkinter.ttk import Combobox
-from db_handler import get_all_cat_code, get_cursos, get_horarios, get_idcurso_by_curso_year, get_municipios, get_view_matriculas_by_idcurso
-from funciones import create_excel_by_curso, init_multilist_matriculas
+from db_handler import get_all_cat_code, get_cursos, get_fecha_inicio_fin_by_idcurso, get_horarios, get_idcurso_by_curso_year, get_municipios, get_view_matriculas_by_idcurso
+from funciones import create_excel_by_curso, formato_fecha_natural, init_multilist_matriculas
 from tkform_new_matr import Form_new_matric
 
 COLOR_DARK_BG = '#1b1e2b'
@@ -37,24 +37,34 @@ def crear_modelos():
 
 def valores_by_cbcursos(cb:Combobox):
     valores = []
-    for item in get_cursos():
-        curso = item[0]
-        year = str(item[1])
-        valores.append(f'{curso}-{year}')
-    cb['values'] = valores
-    cb.current(0)
+    cursos = get_cursos()
+    if cursos:
+        for item in get_cursos():
+            curso = item[0]
+            year = str(item[1])
+            valores.append(f'{curso}-{year}')
+        cb['values'] = valores
+        cb.current(0)
     
+def valores_fechas():
+    sc = cb_curso.get().split('-')
+    id_curso = get_idcurso_by_curso_year(sc[0],sc[1])
+    fechas = get_fecha_inicio_fin_by_idcurso(id_curso)
+    lb_fecha.config(text=formato_fecha_natural(fechas))
+
     
 def elegir_curso(event):
     sc = cb_curso.get().split('-')
     id_curso = get_idcurso_by_curso_year(sc[0],sc[1])
     matriculas_lista = get_view_matriculas_by_idcurso(id_curso)
+    fechas = get_fecha_inicio_fin_by_idcurso(id_curso)
     
     if not matriculas_lista:
         matricula_empty = ['' for _ in range(7)]
         matriculas_lista = []
         matriculas_lista.append(matricula_empty)
         
+    lb_fecha.config(text=formato_fecha_natural(fechas))
     treeview.curso=cb_curso.get()
     treeview.change(matriculas_lista)
 
@@ -91,7 +101,9 @@ cb_curso.grid(row=0,column=3, sticky='e', padx=10, pady=10)
 valores_by_cbcursos(cb_curso)
 cb_curso.bind("<<ComboboxSelected>>", elegir_curso)
 
-
+lb_fecha = Label(frame_superior, text='',background=COLOR_DARK_BG, foreground=COLOR_FB, font=font_middle)
+lb_fecha.grid(row=0,column=4)
+valores_fechas()
 
 # - Frame de botones (lateral)
 buttons_frame = Frame(body_frame, width=150, padx=5,
