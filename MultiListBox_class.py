@@ -2,13 +2,14 @@
 Here the TreeView widget is configured as a multi-column listbox
 with adjustable column width and column-header-click sorting.
 '''
-from tkinter import CENTER, END, W, Button, Text, Entry, Frame, Label, Toplevel, messagebox
+from tkinter import CENTER, END, W, Button, StringVar, Text, Entry, Frame, Label, Toplevel, messagebox
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.font as tkFont
-
-
 from db_handler import actualizar_matricula, eliminar_matr_by_ci_and_curso, get_all_cat_code, get_cursos, get_horarios, get_idcurso_by_curso_year, get_last_curso_id, get_municipios, get_view_matriculas_by_idcurso
+
+GREEN_BUTTON = '#1f6e4d'
+RED_BUTTON = '#811e1d'
 
 
 class MultiColumnListbox(object):
@@ -196,7 +197,7 @@ class MultiColumnListbox(object):
 
             top = Toplevel()
             w = 340
-            h = 325
+            h = 270
             top.geometry("%dx%d+%d+%d" % (w, h, x + 350, y + 150))
 
             top.title('Editando matricula')
@@ -205,6 +206,10 @@ class MultiColumnListbox(object):
             municipios = get_municipios()
             horarios = get_horarios()
             cat_code = get_all_cat_code()
+
+            # StringVars
+            sv_name = StringVar()
+            sv_ci = StringVar()
 
             def check_required_fields():
                 return e_name.get() and e_ci.get()
@@ -216,7 +221,7 @@ class MultiColumnListbox(object):
                 guardar.append(e_municipio.get())
                 guardar.append(e_tel.get())
                 guardar.append(e_horario.get())
-                guardar.append(e_datos.get('1.0', END))
+                guardar.append(e_datos.get())
                 guardar.append(e_categoria.get())
 
                 if not check_required_fields():
@@ -234,40 +239,69 @@ class MultiColumnListbox(object):
 
             def cancelar():
                 top.destroy()
+                
+            # BINDS METHODS
+            # ---- BIND METHODS ----
+            def bind_aceptar(evento):
+                aceptar()
+                pass
+            
+            def bind_cancelar(evento):
+                cancelar()
+                pass
+            
+            def event_change_name(e):
+                capitalizado = capitalizar_palabras(sv_name.get())
+                e_name.delete(0,'end')
+                e_name.insert(0,capitalizado)
+            
+            def capitalizar_palabras(frase:str):
+                palabras:list[str] = frase.split(' ')
+                mayus_palabras = [palabra.capitalize() for palabra in palabras]
+                return ' '.join(mayus_palabras)
 
+            def callback_ci_entry(*args):
+                ci = sv_ci.get()
+                if not ci == "" and not len(ci) == 11 or not ci.isdigit():
+                    e_ci.config(foreground='red')
+                else:
+                    e_ci.config(foreground='black')
+            sv_ci.trace('w',callback_ci_entry)
+            
             guardar = []
             # labels
             lb_name = Label(top, text='Nombre(s) y apellidos')
             lb_ci = Label(top, text='Carnet de Identidad')
-            lb_municipio = Label(top, text='Municipio')
             lb_tel = Label(top, text='Telefono')
-            lb_horario = Label(top, text='Horario')
+            lb_municipio = Label(top, text='Municipio')
             lb_categoria = Label(top, text='Categoria')
+            lb_horario = Label(top, text='Horario')
             lb_datos = Label(top, text='Otros datos')
             # labels grid
             lb_name.grid(row=1, column=0, sticky='w', pady=5, padx=10)
             lb_ci.grid(row=2, column=0, sticky='w', pady=5, padx=10)
-            lb_municipio.grid(row=3, column=0, sticky='w', pady=5, padx=10)
-            lb_tel.grid(row=4, column=0, sticky='w', pady=5, padx=10)
-            lb_horario.grid(row=5, column=0, sticky='w', pady=5, padx=10)
-            lb_categoria.grid(row=6, column=0, sticky='w', pady=5, padx=10)
+            lb_tel.grid(row=3, column=0, sticky='w', pady=5, padx=10)
+            lb_municipio.grid(row=4, column=0, sticky='w', pady=5, padx=10)
+            lb_categoria.grid(row=5, column=0, sticky='w', pady=5, padx=10)
+            lb_horario.grid(row=6, column=0, sticky='w', pady=5, padx=10)
             lb_datos.grid(row=7, column=0, sticky='wn', pady=5, padx=10)
 
             # entrys
-            e_name = Entry(top, width=30)
-            e_ci = Entry(top, width=30)
-            e_municipio = self.combobox(top, municipios, width=27)
+            e_name = Entry(top, width=30, textvariable=sv_name)
+            e_ci = Entry(top, width=30, textvariable=sv_ci)
             e_tel = Entry(top, width=10)
-            e_horario = self.combobox(top, horarios, width=27)
+            e_municipio = self.combobox(top, municipios, width=27)
             e_categoria = self.combobox(top, cat_code, width=27)
-            e_datos = Text(top, width=22, height=4)
+            e_horario = self.combobox(top, horarios, width=27)
+            e_datos = Entry(top, width=30)
+
             # entrys grid
             e_name.grid(row=1, column=1, sticky='w', pady=5)
             e_ci.grid(row=2, column=1, sticky='w', pady=5)
-            e_municipio.grid(row=3, column=1, sticky='w', pady=5)
-            e_tel.grid(row=4, column=1, sticky='w', pady=5)
-            e_horario.grid(row=5, column=1, sticky='w', pady=5)
-            e_categoria.grid(row=6, column=1, sticky='w', pady=5)
+            e_tel.grid(row=3, column=1, sticky='w', pady=5)
+            e_municipio.grid(row=4, column=1, sticky='w', pady=5)
+            e_categoria.grid(row=5, column=1, sticky='w', pady=5)
+            e_horario.grid(row=6, column=1, sticky='w', pady=5)
             e_datos.grid(row=7, column=1, sticky='w', pady=5)
 
             # valores que carga por defecto
@@ -299,18 +333,22 @@ class MultiColumnListbox(object):
                     break
             e_categoria.current(coinc)
 
-            e_datos.insert('1.0', datos)
+            e_datos.insert(0, datos)
 
             e_name.focus_set()
 
             frame_bts = Frame(top)
             frame_bts.grid(row=8, column=1, sticky='e')
 
-            bt_aceptar = Button(frame_bts, text='Actualizar', command=aceptar)
+            bt_aceptar = Button(frame_bts, text='Actualizar', command=aceptar, bg=GREEN_BUTTON, fg='white', width=8)
             bt_aceptar.grid(row=0, column=0, padx=10, pady=10)
-            bt_cancelar = Button(frame_bts, text='Cancelar', command=cancelar)
+            bt_cancelar = Button(frame_bts, text='Cancelar', command=cancelar, bg=RED_BUTTON, fg='white', width=8)
             bt_cancelar.grid(row=0, column=1, padx=10, pady=10)
 
+            e_name.bind('<FocusOut>', event_change_name)
+            top.bind('<Return>', bind_aceptar)
+            top.bind('<Escape>', bind_cancelar)
+            
             top.mainloop()
 
     def eliminar(self):

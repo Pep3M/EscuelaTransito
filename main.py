@@ -18,7 +18,7 @@ def agregar_matricula():
 
     top = Toplevel()
     w = 340
-    h = 325
+    h = 270
     top.geometry("%dx%d+%d+%d" % (w, h, x + 350, y + 150))
 
     top.title('Agregando matricula')
