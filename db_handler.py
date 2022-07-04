@@ -42,7 +42,8 @@ def create_tables(db):
         %s VARCHAR(15),
         %s VARCHAR(15),
         %s VARCHAR(100))
-    ''' % (T_CURSOS, NOMBRE_CURSO, MATRICULA_INIT, YEAR, FECHA_INICIAL, FECHA_FINAL, DATOS)
+    ''' % (T_CURSOS, NOMBRE_CURSO, MATRICULA_INIT, YEAR, FECHA_INICIAL,
+           FECHA_FINAL, DATOS)
     db.cursor().execute(sql)
 
     # TABLA HORARIOS
@@ -181,7 +182,8 @@ def datos_iniciales(db):
     sql = '''
     INSERT OR IGNORE INTO %s (%s,%s,%s)
     VALUES (?,?,?)
-    ''' % (T_CURSOS, NOMBRE_CURSO, MATRICULA_INIT, YEAR, FECHA_INICIAL, FECHA_FINAL)
+    ''' % (T_CURSOS, NOMBRE_CURSO, MATRICULA_INIT, YEAR, FECHA_INICIAL,
+           FECHA_FINAL)
     param = ['10', 615, 2022, '08/07/2022', '20/07/2022']
     db.cursor().execute(sql, param)
 
@@ -199,19 +201,22 @@ def datos_iniciales(db):
         param = [horario[0], horario[1]]
         db.cursor().execute(sql, param)
 
+
 @conexion_db
-def agregar_fecha_al_horario(db:Connection):
+def agregar_fecha_al_horario(db: Connection):
     sql = f'''ALTER TABLE {T_CURSOS} 
     ADD COLUMN [{FECHA_INICIAL}] [VARCHAR(15)];'''
     sql2 = f'''ALTER TABLE {T_CURSOS} 
     ADD COLUMN [{FECHA_FINAL}] [VARCHAR(15)];'''
-    
+
     cursor = db.cursor()
     try:
         cursor.execute(sql)
         cursor.execute(sql2)
-    except: 
-        print('Ya la tabla horario tiene la fecha de inicio y final como campos')
+    except:
+        print(
+            'Ya la tabla horario tiene la fecha de inicio y final como campos')
+
 
 # datos iniciales cuando no existe la DB
 if not path.exists(DB_NAME):
@@ -263,6 +268,7 @@ def get_id_alumno_by_ci(ci):
     db.close()
     return id_alumno
 
+
 def get_alumnos_for_excel(id_curso, horario):
     db = connect(DB_NAME)
     cursor = db.cursor()
@@ -278,7 +284,6 @@ def get_alumnos_for_excel(id_curso, horario):
     db.close()
     return alumnos
 
-    
 
 @conexion_db
 def get_municipios(db):
@@ -299,6 +304,7 @@ def get_horarios(db: Connection):
     horarios = [elemento[0] for elemento in elementos]
     return horarios
 
+
 @conexion_db
 def get_id_horarios(db: Connection):
     cursor = db.cursor()
@@ -312,7 +318,7 @@ def get_id_horarios(db: Connection):
 def get_matr_init_by_id(id_curso) -> int:
     db = connect(DB_NAME)
     cursor = db.cursor()
-    
+
     sql = f'''
     SELECT {MATRICULA_INIT} FROM {T_CURSOS} WHERE id=?;
     '''
@@ -322,7 +328,6 @@ def get_matr_init_by_id(id_curso) -> int:
     matr_ini = cursor.fetchone()[0]
     db.close()
     return int(matr_ini)
-    
 
 
 @conexion_db
@@ -364,12 +369,69 @@ def get_cursos(db: Connection):
 
     sql = f'''
     SELECT {NOMBRE_CURSO},{YEAR} FROM {T_CURSOS}
-    ORDER BY {YEAR},{NOMBRE_CURSO} DESC
+    ORDER BY {YEAR} DESC,{NOMBRE_CURSO} DESC
     '''
     cursor.execute(sql)
     fetch = cursor.fetchall()
     if fetch: return fetch
     else: return False
+
+
+def get_campo_datos_idcursos(idcurso):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+
+    sql = f'''
+    SELECT {DATOS} FROM {T_CURSOS}
+    WHERE id=?;
+    '''
+    param = [idcurso]
+    cursor.execute(sql, param)
+    fetch = cursor.fetchone()
+    if fetch and not fetch[0] == None: return fetch[0]
+    else: return False
+    db.close()
+
+
+def actualizar_curso(id_curso, nombre, year, f_ini, f_fin, datos):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+
+    sql = f'''
+    UPDATE {T_CURSOS} SET {NOMBRE_CURSO}=?, {YEAR}=?, {FECHA_INICIAL}=?, {FECHA_FINAL}=?, {DATOS}=? WHERE id=?
+    '''
+    param = [nombre, year, f_ini, f_fin, datos, id_curso]
+    cursor.execute(sql, param)
+
+    db.commit()
+    db.close()
+
+
+def eliminar_curso(id_curso):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+
+    sql = f'''
+    DELETE FROM {T_MATRICULAS}
+    WHERE {ID_CURSO}=?
+    '''
+    parm = [id_curso]
+
+    cursor.execute(sql, parm)
+
+    db.commit()
+
+    sql = f'''
+    DELETE FROM {T_CURSOS}
+    WHERE id=?
+    '''
+    parm = [id_curso]
+
+    cursor.execute(sql, parm)
+
+    db.commit()
+
+    db.close()
 
 
 @conexion_db
@@ -409,14 +471,13 @@ def get_id_horario(horario):
     return id
 
 
-
 def get_curso_by_id(id, curso_formateado=False):
     db = connect(DB_NAME)
     cursor = db.cursor()
 
     sql = '''
     SELECT %s,%s FROM %s WHERE id=?
-    ''' % (NOMBRE_CURSO,YEAR, T_CURSOS)
+    ''' % (NOMBRE_CURSO, YEAR, T_CURSOS)
     param = [id]
 
     cursor.execute(sql, param)
@@ -431,9 +492,8 @@ def get_curso_by_id(id, curso_formateado=False):
 
     if curso_formateado:
         return f'{nombre}-{year}'
-    
-    return nombre
 
+    return nombre
 
 
 def get_alumno_by_id(id):
@@ -482,6 +542,23 @@ def get_horario_by_id(id):
     db.close()
 
     return fetch
+
+
+def get_matricula_by_ci_curso(ci, id_curso):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+
+    sql = f'''
+    SELECT {FULL_NAME},{HORARIO} FROM {V_MATRICULAS}
+    WHERE {CI}=? AND {ID_CURSO}=?
+    '''
+    parm = [ci, id_curso]
+    cursor.execute(sql, parm)
+
+    fetch = cursor.fetchone()
+    db.close()
+    return fetch
+
 
 
 def get_view_matriculas_by_idcurso(id_curso):
@@ -646,15 +723,18 @@ def get_idalumnos_by_idhorario_idcurso(id_horario, id_curso):
     '''
     parm = [id_horario, id_curso]
 
-    cursor.execute(sql,parm)
+    cursor.execute(sql, parm)
     fetch = cursor.fetchall()
     if fetch:
         ids = [item[0] for item in fetch]
         return ids
 
+
 #print(get_idalumnos_by_idhorario_idcurso(1,1))
 
-def set_matriculas_by_id_horario_idcurso(id_horario, id_curso, matricula_inicial:int):
+
+def set_matriculas_by_id_horario_idcurso(id_horario, id_curso,
+                                         matricula_inicial: int):
     db = connect(DB_NAME)
     cursor = db.cursor()
 
@@ -664,20 +744,21 @@ def set_matriculas_by_id_horario_idcurso(id_horario, id_curso, matricula_inicial
     UPDATE {T_MATRICULAS} SET {MATRICULA}=?
     WHERE {ID_HORARIO}=? AND {ID_ALUMNO}=?;
     '''
-    
+
     matricula = matricula_inicial
     if ids_alumnos:
         for id_alum in ids_alumnos:
-            
+
             parm = [matricula, id_horario, id_alum]
-            
+
             cursor.execute(sql, parm)
             db.commit()
-            
+
             matricula += 1
-        
+
     db.close()
     return matricula
+
 
 def get_fecha_inicio_fin_by_idcurso(id_curso):
     db = connect(DB_NAME)
@@ -688,12 +769,13 @@ def get_fecha_inicio_fin_by_idcurso(id_curso):
     WHERE id=?
     '''
     parm = [id_curso]
-    cursor.execute(sql,parm)
-    
+    cursor.execute(sql, parm)
+
     fetch = cursor.fetchone()
     if fetch:
         return fetch
     return False
+
 
 def agregar_curso(name_curso, year, f_ini, f_fin, datos) -> int | bool:
     db = connect(DB_NAME)
@@ -710,7 +792,7 @@ def agregar_curso(name_curso, year, f_ini, f_fin, datos) -> int | bool:
     id_curso = get_idcurso_by_curso_year(name_curso, year)
 
     return id_curso
-    
+
 
 #actualizar_matricula(['Esteban Lopez Abreu', '54011231432', 'Centro Habana', '54321243', '9:00 AM - 11:00 AM', 'asdasd\n', 'A-1'],'540112314321')
 # print(select_alumno_by_ci(ci='811232145765'))

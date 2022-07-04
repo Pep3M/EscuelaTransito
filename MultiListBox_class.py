@@ -6,7 +6,7 @@ from tkinter import CENTER, END, W, Button, StringVar, Text, Entry, Frame, Label
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.font as tkFont
-from db_handler import actualizar_matricula, eliminar_matr_by_ci_and_curso, get_all_cat_code, get_cursos, get_horarios, get_idcurso_by_curso_year, get_last_curso_id, get_municipios, get_view_matriculas_by_idcurso
+from db_handler import actualizar_matricula, eliminar_matr_by_ci_and_curso, get_all_cat_code, get_cursos, get_horarios, get_idcurso_by_curso_year, get_last_curso_id, get_matricula_by_ci_curso, get_municipios, get_view_matriculas_by_idcurso
 
 GREEN_BUTTON = '#1f6e4d'
 RED_BUTTON = '#811e1d'
@@ -92,7 +92,8 @@ class MultiColumnListbox(object):
             # adjust the column's width to the header string
             self.tree.column(col,
                              width=tkFont.Font().measure(col.title()),
-                             minwidth=100, anchor=CENTER)
+                             minwidth=100,
+                             anchor=CENTER)
 
             # ancho de columnas condicionales (cambiar codigo por uno mas reutilizable)
             if i == 0:
@@ -214,6 +215,16 @@ class MultiColumnListbox(object):
             def check_required_fields():
                 return e_name.get() and e_ci.get()
 
+            def ci_duplicado_en_matricula():
+                sc = self.curso.split('-')
+                id_curso = get_idcurso_by_curso_year(sc[0], sc[1])
+
+                ci_actual = ci
+                ci_nuevo = sv_ci.get()
+                if not ci_actual == ci_nuevo:
+                    return get_matricula_by_ci_curso(ci_nuevo, id_curso)
+                return False
+
             def aceptar():
                 guardar.clear()
                 guardar.append(e_name.get())
@@ -224,9 +235,18 @@ class MultiColumnListbox(object):
                 guardar.append(e_datos.get())
                 guardar.append(e_categoria.get())
 
+                ci_data_dupl = ci_duplicado_en_matricula()
+
                 if not check_required_fields():
                     messagebox.showerror(
-                        'Faltan campos requerido', 'Compruebe que el campo "Nombre(s) y apellidos" y "Carnet de Identidad" esten correctamente llenados')
+                        'Faltan campos requerido',
+                        'Compruebe que el campo "Nombre(s) y apellidos" y "Carnet de Identidad" esten correctamente llenados'
+                    )
+                if ci_data_dupl:
+                    messagebox.showerror(
+                        'Matricula duplicada',
+                        f'Esta tratando de agregar una matricula cuyo Carnet de Identidad coicide con un alumno ya agregado previamente a este curso.\n\nAlumno: {ci_data_dupl[0]} en el horario de {ci_data_dupl[1]}'
+                    )
                 else:
                     # metodo externo no reutilizable
                     sc = self.curso.split('-')
@@ -239,24 +259,24 @@ class MultiColumnListbox(object):
 
             def cancelar():
                 top.destroy()
-                
+
             # BINDS METHODS
             # ---- BIND METHODS ----
             def bind_aceptar(evento):
                 aceptar()
                 pass
-            
+
             def bind_cancelar(evento):
                 cancelar()
                 pass
-            
+
             def event_change_name(e):
                 capitalizado = capitalizar_palabras(sv_name.get())
-                e_name.delete(0,'end')
-                e_name.insert(0,capitalizado)
-            
-            def capitalizar_palabras(frase:str):
-                palabras:list[str] = frase.split(' ')
+                e_name.delete(0, 'end')
+                e_name.insert(0, capitalizado)
+
+            def capitalizar_palabras(frase: str):
+                palabras: list[str] = frase.split(' ')
                 mayus_palabras = [palabra.capitalize() for palabra in palabras]
                 return ' '.join(mayus_palabras)
 
@@ -266,8 +286,9 @@ class MultiColumnListbox(object):
                     e_ci.config(foreground='red')
                 else:
                     e_ci.config(foreground='black')
-            sv_ci.trace('w',callback_ci_entry)
-            
+
+            sv_ci.trace('w', callback_ci_entry)
+
             guardar = []
             # labels
             lb_name = Label(top, text='Nombre(s) y apellidos')
@@ -340,20 +361,31 @@ class MultiColumnListbox(object):
             frame_bts = Frame(top)
             frame_bts.grid(row=8, column=1, sticky='e')
 
-            bt_aceptar = Button(frame_bts, text='Actualizar', command=aceptar, bg=GREEN_BUTTON, fg='white', width=8)
+            bt_aceptar = Button(frame_bts,
+                                text='Actualizar',
+                                command=aceptar,
+                                bg=GREEN_BUTTON,
+                                fg='white',
+                                width=8)
             bt_aceptar.grid(row=0, column=0, padx=10, pady=10)
-            bt_cancelar = Button(frame_bts, text='Cancelar', command=cancelar, bg=RED_BUTTON, fg='white', width=8)
+            bt_cancelar = Button(frame_bts,
+                                 text='Cancelar',
+                                 command=cancelar,
+                                 bg=RED_BUTTON,
+                                 fg='white',
+                                 width=8)
             bt_cancelar.grid(row=0, column=1, padx=10, pady=10)
 
             e_name.bind('<FocusOut>', event_change_name)
             top.bind('<Return>', bind_aceptar)
             top.bind('<Escape>', bind_cancelar)
-            
+
             top.mainloop()
 
     def eliminar(self):
-        if messagebox.askokcancel('Confirmar eliminacion',
-                                  f'Confirme que desea eliminar la matricula seleccionada'):
+        if messagebox.askokcancel(
+                'Confirmar eliminacion',
+                f'Confirme que desea eliminar la matricula seleccionada'):
 
             indexes = [self.tree.index(idx) for idx in self.tree.selection()]
 
@@ -372,7 +404,7 @@ class MultiColumnListbox(object):
                 reductor += 1
 
                 eliminar_matr_by_ci_and_curso(ci, curso_num, year)
-                
+
                 self.change(self.list)
 
     def setupMenuContextual(self):
@@ -410,8 +442,7 @@ class MultiColumnListbox(object):
 
     def combobox(self, top, valores, width=20, modo=True):
         estado = 'readonly' if modo else 'normal'
-        box = ttk.Combobox(top, width=width,
-                           state=estado)
+        box = ttk.Combobox(top, width=width, state=estado)
         box['values'] = valores
         box.current(0)  # Selecciona el primer elemento de la tupla.
         #box.bind("<<ComboboxSelected>>", combobox_elegir)
