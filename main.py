@@ -3,6 +3,7 @@ from tkinter.messagebox import askquestion, showwarning
 from tkinter.ttk import Combobox
 from db_handler import eliminar_curso, get_all_cat_code,get_fecha_inicio_fin_by_idcurso, get_horarios, get_idcurso_by_curso_year, get_municipios, get_view_matriculas_by_idcurso
 from funciones import actualizar_treeview, create_excel_by_curso, formato_fecha_natural, init_multilist_matriculas, valores_by_cbcursos
+from security_copy import copia_seguridad_diaria
 from tkform_new_matr import Form_curso, Form_edit_curso, Form_new_matric
 
 COLOR_DARK_BG = '#1b1e2b'
@@ -13,6 +14,7 @@ COLOR_RED_DEL = '#943444'
 
 # Funciones #
 
+copia_seguridad_diaria()
 
 def agregar_matricula():
     x = root.winfo_x()

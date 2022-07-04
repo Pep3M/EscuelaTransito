@@ -793,7 +793,19 @@ def agregar_curso(name_curso, year, f_ini, f_fin, datos) -> int | bool:
 
     return id_curso
 
+@conexion_db
+def get_last_matricula_date(db:Connection):
+    
+    cursor = db.cursor()
 
-#actualizar_matricula(['Esteban Lopez Abreu', '54011231432', 'Centro Habana', '54321243', '9:00 AM - 11:00 AM', 'asdasd\n', 'A-1'],'540112314321')
-# print(select_alumno_by_ci(ci='811232145765'))
-# print(get_horarios())
+    sql = f'''
+    SELECT {FECHA} FROM {T_MATRICULAS} 
+    ORDER BY {FECHA} DESC LIMIT 1
+    '''
+    cursor.execute(sql)
+
+    fetch = cursor.fetchone()
+    
+    if fetch:
+        return fetch[0]
+    
