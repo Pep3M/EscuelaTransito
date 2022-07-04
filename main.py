@@ -1,8 +1,8 @@
 from tkinter import E, X, Button, Frame, Label, PhotoImage, StringVar, Tk, Toplevel, font
 from tkinter.ttk import Combobox
-from db_handler import get_all_cat_code, get_cursos, get_fecha_inicio_fin_by_idcurso, get_horarios, get_idcurso_by_curso_year, get_municipios, get_view_matriculas_by_idcurso
-from funciones import create_excel_by_curso, formato_fecha_natural, init_multilist_matriculas
-from tkform_new_matr import Form_new_matric
+from db_handler import get_all_cat_code,get_fecha_inicio_fin_by_idcurso, get_horarios, get_idcurso_by_curso_year, get_municipios, get_view_matriculas_by_idcurso
+from funciones import create_excel_by_curso, formato_fecha_natural, init_multilist_matriculas, valores_by_cbcursos
+from tkform_new_matr import Form_curso, Form_new_matric
 
 COLOR_DARK_BG = '#1b1e2b'
 COLOR_SOFT_BG = '#313446'
@@ -34,17 +34,21 @@ def agregar_matricula():
 
 def crear_modelos():
     create_excel_by_curso(cb_curso.get())
+    
+def crear_curso():
+    x = root.winfo_x()
+    y = root.winfo_y()
 
-def valores_by_cbcursos(cb:Combobox):
-    valores = []
-    cursos = get_cursos()
-    if cursos:
-        for item in get_cursos():
-            curso = item[0]
-            year = str(item[1])
-            valores.append(f'{curso}-{year}')
-        cb['values'] = valores
-        cb.current(0)
+    top = Toplevel()
+    w = 300
+    h = 220
+    top.geometry("%dx%d+%d+%d" % (w, h, x + 350, y + 150))
+
+    top.title('Agregando curso')
+    top.attributes('-topmost', 'true')
+    
+    form = Form_curso(top, treeview, cb_curso, lb_fecha)
+    top.mainloop()
     
 def valores_fechas():
     sc = cb_curso.get().split('-')
@@ -136,7 +140,7 @@ bt_new_curso = Button(buttons_frame,
                      background=COLOR_SOFT_BG,
                      foreground=COLOR_FB,
                      font=font_middle,
-                     command=agregar_matricula
+                     command=crear_curso
                      )
 bt_new_curso.pack(padx=3, pady=5, fill=X)
 

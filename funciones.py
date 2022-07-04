@@ -1,8 +1,9 @@
 from os import mkdir, path
 from tkinter import filedialog
+from tkinter.ttk import Combobox
 from MultiListBox_class import MultiColumnListbox
 from curso_modelo import CursoModelo
-from db_handler import get_all_alumnos, get_alumnos_for_excel, get_fecha_inicio_fin_by_idcurso, get_horario_by_id, get_id_horarios, get_idcurso_by_curso_year, get_matr_init_by_id, get_view_matriculas_by_idcurso, set_matriculas_by_id_horario_idcurso
+from db_handler import get_all_alumnos, get_alumnos_for_excel, get_cursos, get_fecha_inicio_fin_by_idcurso, get_horario_by_id, get_id_horarios, get_idcurso_by_curso_year, get_matr_init_by_id, get_view_matriculas_by_idcurso, set_matriculas_by_id_horario_idcurso
 from cmd_abrir_carpeta_explorer import abrirCarpeta
 from db_constantes import *
 
@@ -79,7 +80,30 @@ def actualizar_treeview(treeview:MultiColumnListbox):
         
     treeview.change(matriculas_lista)
     
-    
+
+def valores_by_cbcursos(cb:Combobox, curso_mostrar=None):
+    valores = []
+    cursos = get_cursos()
+    position_curso = 0
+    if cursos:
+        for i,item in enumerate(get_cursos()):
+            curso = item[0]
+            year = str(item[1])
+            curso_conform = f'{curso}-{year}' 
+            valores.append(curso_conform)
+            
+            if curso_conform == curso_mostrar:
+                position_curso = i
+            
+        cb['values'] = valores
+        
+        if not curso_mostrar:
+            cb.current(0)
+            return
+        
+        cb.current(position_curso)
+
+   
 def formato_fecha_natural(fechas:list | tuple):
     fe_inicio = str(fechas[0]).split('/')
     fe_fin = str(fechas[1]).split('/')

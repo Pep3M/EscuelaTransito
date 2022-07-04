@@ -344,7 +344,7 @@ def get_idcurso_by_curso_year(curso, year):
     sql = '''
     SELECT id FROM %s WHERE %s=? AND %s=?
     ''' % (T_CURSOS, NOMBRE_CURSO, YEAR)
-    param = [curso, year]
+    param = [str(curso), int(year)]
 
     cursor.execute(sql, param)
     fetch = cursor.fetchone()
@@ -364,7 +364,7 @@ def get_cursos(db: Connection):
 
     sql = f'''
     SELECT {NOMBRE_CURSO},{YEAR} FROM {T_CURSOS}
-    ORDER BY {NOMBRE_CURSO},{YEAR} DESC
+    ORDER BY {YEAR},{NOMBRE_CURSO} DESC
     '''
     cursor.execute(sql)
     fetch = cursor.fetchall()
@@ -410,13 +410,13 @@ def get_id_horario(horario):
 
 
 
-def get_curso_by_id(id):
+def get_curso_by_id(id, curso_formateado=False):
     db = connect(DB_NAME)
     cursor = db.cursor()
 
     sql = '''
-    SELECT %s FROM %s WHERE id=?
-    ''' % (NOMBRE_CURSO, T_CURSOS)
+    SELECT %s,%s FROM %s WHERE id=?
+    ''' % (NOMBRE_CURSO,YEAR, T_CURSOS)
     param = [id]
 
     cursor.execute(sql, param)
@@ -425,10 +425,15 @@ def get_curso_by_id(id):
 
     if fetch:
         nombre = fetch[0]
+        year = fetch[1]
     else:
         nombre = ''
 
+    if curso_formateado:
+        return f'{nombre}-{year}'
+    
     return nombre
+
 
 
 def get_alumno_by_id(id):
@@ -690,6 +695,22 @@ def get_fecha_inicio_fin_by_idcurso(id_curso):
         return fetch
     return False
 
+def agregar_curso(name_curso, year, f_ini, f_fin, datos) -> int | bool:
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+
+    sql = f'''
+    INSERT OR IGNORE INTO {T_CURSOS}({NOMBRE_CURSO},{YEAR},{FECHA_INICIAL},{FECHA_FINAL},{DATOS})
+    VALUES (?,?,?,?,?)
+    '''
+    param = [str(name_curso), int(year), f_ini, f_fin, datos]
+    cursor.execute(sql, param)
+    db.commit()
+    db.close()
+    id_curso = get_idcurso_by_curso_year(name_curso, year)
+
+    return id_curso
+    
 
 #actualizar_matricula(['Esteban Lopez Abreu', '54011231432', 'Centro Habana', '54321243', '9:00 AM - 11:00 AM', 'asdasd\n', 'A-1'],'540112314321')
 # print(select_alumno_by_ci(ci='811232145765'))

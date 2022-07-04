@@ -1,12 +1,13 @@
 
+from datetime import datetime
 from msilib.schema import ComboBox
 from tkinter import END, Button, Entry, Frame, Label, StringVar, Text, Tk, font
 from tkinter.messagebox import showerror
 from tkinter.ttk import Combobox
 from MultiListBox_class import MultiColumnListbox
-from db_handler import agregar_matricula
-from funciones import actualizar_treeview
-from tkcalendar import Calendar, DateEntry
+from db_handler import agregar_curso, agregar_matricula, get_curso_by_id, get_fecha_inicio_fin_by_idcurso, get_view_matriculas_by_idcurso
+from funciones import actualizar_treeview, formato_fecha_natural, valores_by_cbcursos
+from tkcalendar import DateEntry
 
 
 GREEN_BUTTON = '#1f6e4d'
@@ -143,12 +144,25 @@ class Form_new_matric:
 
 class Form_curso():
     
-    def __init__(self, frame_container:Frame | Tk, treeview:MultiColumnListbox) -> None:
+    def __init__(self, frame_father:Frame | Tk, 
+                 treeview:MultiColumnListbox,
+                 combobox,
+                 lb_fecha
+                 ) -> None:
         
-        self.frame_container = frame_container
+        year_hoy = datetime.now().year
+        
+        self.frame_father = frame_father
+        self.frame_container = Frame(frame_father)
+        self.frame_container.pack(padx=10, pady=10)
+        self.combobox = combobox
+        self.lb_fecha = lb_fecha
+        self.treeview = treeview
+        
         # StringVar
         self.sv_name = StringVar()
         self.sv_year = StringVar()
+        self.sv_year.set(year_hoy)
         self.sv_fechaini = StringVar()
         self.sv_fechafin = StringVar()
         self.sv_datos = StringVar()
@@ -167,18 +181,92 @@ class Form_curso():
         self.lb_datos.grid(row=5,column=0, sticky='wn', pady=5, padx=10)
         
         # entrys
-        self.e_name = Entry(self.frame_container, textvariable=self.sv_name, width=30)
-        self.e_year = Entry(self.frame_container, textvariable= self.sv_year, width=30)
-        self.e_datos = Entry(self.frame_container, textvariable=self.sv_datos)
+        self.e_name = Entry(self.frame_container, textvariable=self.sv_name, width=15)
+        self.e_year = Entry(self.frame_container, textvariable= self.sv_year, width=15)
+        self.e_fechaini = DateEntry(self.frame_container, values='Text', state='readonly', date_pattern='dd/mm/yyyy', textvariable=self.sv_fechaini)
+        self.e_fechafin = DateEntry(self.frame_container, values='Text', state='readonly', date_pattern='dd/mm/yyyy', textvariable=self.sv_fechafin)
+        self.e_datos = Entry(self.frame_container, textvariable=self.sv_datos, width=15)
         # entrys grid
         self.e_name.grid(row=1,column=1, sticky='w', pady=5)
         self.e_year.grid(row=2,column=1, sticky='w', pady=5)
-        self.e_datos.grid(row=7,column=1, sticky='w', pady=5)
+        self.e_fechaini.grid(row=3,column=1, sticky='w', pady=5)
+        self.e_fechafin.grid(row=4,column=1, sticky='w', pady=5)
+        self.e_datos.grid(row=5,column=1, sticky='w', pady=5)
         
         self.e_name.focus_set()
+    
+        """ self.frame_bts = Frame(self.frame_container)
+        self.frame_bts.grid(row=8, column=1, rowspan=2, sticky='e') """
+        
+        self.bt_aceptar = Button(self.frame_container, text='Agregar', command=self.aceptar, background=GREEN_BUTTON, fg='white', width=8)
+        self.bt_aceptar.grid(row=8, column=0, padx=10, pady=10)
+        self.bt_cancelar = Button(self.frame_container, text='Cancelar', command= self.cancelar, bg=RED_BUTTON, fg='white', width=8)
+        self.bt_cancelar.grid(row=8, column=1, padx=10, pady=10)
+        
+        self.e_name.bind('<FocusOut>', self.bind_check_dos_dig)
+        self.frame_father.bind('<Return>', self.bind_aceptar)
+        self.frame_father.bind('<Escape>', self.bind_cancelar)
 
 
+    
+    def aceptar(self):
+        self.dos_digitos_en_name_curso()
 
+        name_curso = self.sv_name.get()
+        year = self.sv_year.get()
+        f_ini = self.sv_fechaini.get()
+        f_fin = self.sv_fechafin.get()
+        datos = self.sv_datos.get()
+        
+        if not self.check_required_fields():
+            showerror('Faltan campos requerido','Compruebe que los campos "Curso" y "Año" esten correctamente llenados')
+        else:
+            #metodo externo no reutilizable
+            id_curso_agregado = agregar_curso(name_curso, year, f_ini, f_fin, datos)
+            
+            if id_curso_agregado == 0: 
+                showerror('Error al agregar el curso','No se pudo agregar el curso, revice bien los campos o pongase en contacto con su programador')
+                return
+            
+            self.frame_father.destroy()
+            valores_by_cbcursos(self.combobox, f'{name_curso}-{year}')
+            self.elegir_curso(id_curso_agregado, self.lb_fecha)
+    
+    def cancelar(self):
+        self.frame_father.destroy()
+
+    def check_required_fields(self):
+        return self.sv_name.get() and self.sv_year.get()
+    
+    def dos_digitos_en_name_curso(self):
+        self.sv_name.set(self.sv_name.get().strip())
+        if len(self.sv_name.get())==1:
+            self.sv_name.set(f'0{self.sv_name.get()}')
+            
+    def elegir_curso(self, id_curso, lb_fecha):
+        matriculas_lista = get_view_matriculas_by_idcurso(id_curso)
+        fechas = get_fecha_inicio_fin_by_idcurso(id_curso)
+        curso = get_curso_by_id(id_curso, curso_formateado=True)
+        
+        if not matriculas_lista:
+            matricula_empty = ['' for _ in range(7)]
+            matriculas_lista = []
+            matriculas_lista.append(matricula_empty)
+            
+        lb_fecha.config(text=formato_fecha_natural(fechas))
+        self.treeview.curso=curso
+        self.treeview.change(matriculas_lista)
+
+    
+    # ---- BIND METHODS ----
+    def bind_check_dos_dig(self, evento):
+        self.dos_digitos_en_name_curso()
+        
+    def bind_aceptar(self, evento):
+        self.aceptar()
+    
+    def bind_cancelar(self, evento):
+        self.cancelar()
 
 
 
@@ -187,10 +275,6 @@ if __name__ == '__main__':
 
     
     
-    """ root = Tk()
-    munic = get_municipios()
-    form = Form_new_matric(root, munic)
+    root = Tk()
+    form = Form_curso(root)
     root.mainloop()
-    
-    if len(form.guardar) > 0:
-        print(form.guardar[1]) """
