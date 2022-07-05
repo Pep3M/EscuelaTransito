@@ -3,7 +3,7 @@ from tkinter import filedialog
 from tkinter.ttk import Combobox
 from MultiListBox_class import MultiColumnListbox
 from curso_modelo import CursoModelo
-from db_handler import get_all_alumnos, get_alumnos_for_excel, get_cursos, get_fecha_inicio_fin_by_idcurso, get_horario_by_id, get_id_horarios, get_idcurso_by_curso_year, get_matr_init_by_id, get_view_matriculas_by_idcurso, set_matriculas_by_id_horario_idcurso
+from db_handler import get_all_alumnos, get_alumnos_for_excel, get_cursos, get_fecha_inicio_fin_by_idcurso, get_horario_by_id, get_horarios, get_id_horarios, get_idcurso_by_curso_year, get_matr_init_by_id, get_view_matriculas_by_idcurso, set_matriculas_by_id_horario_idcurso
 from cmd_abrir_carpeta_explorer import abrirCarpeta
 from db_constantes import *
 
@@ -102,6 +102,27 @@ def valores_by_cbcursos(cb:Combobox, curso_mostrar=None):
             return
         
         cb.current(position_curso)
+        
+def valores_by_cbhorario(cb:Combobox, horario_mostrar=None):
+    valores = []
+    horarios = get_horarios()
+    position_horario = 0
+    if horarios:
+        valores.append('CURSO COMPLETO')
+        for i,horario in enumerate(horarios):
+            
+            valores.append(horario)
+            
+            if horario == horario_mostrar:
+                position_horario = i
+            
+        cb['values'] = valores
+        
+        if not horario_mostrar:
+            cb.current(0)
+            return
+        
+        cb.current(position_horario)
 
    
 def formato_fecha_natural(fechas:list | tuple):
