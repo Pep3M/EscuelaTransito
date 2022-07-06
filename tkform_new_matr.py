@@ -53,6 +53,8 @@ class Form_new_matric:
         self.e_municipio = self.combobox(municipios, width=27)
         self.e_categoria = self.combobox(cat_code, width=27)
         self.e_horario = self.combobox(horarios, width=27)
+        pos = self.posicion_horario()
+        self.e_horario.current(pos)
         self.e_datos = Entry(self.frame_container, width=30)
         # entrys grid
         self.e_name.grid(row=1, column=1, sticky='w', pady=5)
@@ -133,14 +135,23 @@ class Form_new_matric:
     def combobox_elegir(self, evento):
         #self.valor.set(self.box.get())
         pass
+    
+    def posicion_horario(self):
+        horario = self.treeview.horario
+        horario_final = horario if not horario == 'CURSO COMPLETO' else None
+        if horario_final:
+            for i, hor in enumerate(self.e_horario['values']):
+                print(hor, horario_final)
+                if hor == horario_final:
+                    return i
+                
+            return 0
 
     def ci_duplicado_en_matricula(self):
         sc = self.treeview.curso.split('-')
         id_curso = get_idcurso_by_curso_year(sc[0], sc[1])
 
-        return get_matricula_by_ci_curso(self.ci_sv.get(),id_curso)
-        
-                    
+        return get_matricula_by_ci_curso(self.ci_sv.get(), id_curso)
 
     def check_required_fields(self):
         return self.e_name.get() and self.e_ci.get()
@@ -299,7 +310,12 @@ class Form_curso():
             self.sv_name.set(f'0{self.sv_name.get()}')
 
     def elegir_curso(self, id_curso, lb_fecha):
-        matriculas_lista = get_view_matriculas_by_idcurso(id_curso)
+
+        horario = self.treeview.horario
+        horario_final = horario if not horario == 'CURSO COMPLETO' else None
+
+        matriculas_lista = get_view_matriculas_by_idcurso(
+            id_curso, horario_final)
         fechas = get_fecha_inicio_fin_by_idcurso(id_curso)
         curso = get_curso_by_id(id_curso, curso_formateado=True)
 

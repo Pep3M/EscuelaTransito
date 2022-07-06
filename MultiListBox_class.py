@@ -27,6 +27,7 @@ class MultiColumnListbox(object):
         self.myFont = ('Arial 10')
         self.tree = None
         self.curso = '10-2022'  # inicial
+        self.horario = 'CURSO COMPLETO'  # inicial
         self.frame = frame_container
         self.column_header = column_header
         self.list = list
@@ -252,10 +253,13 @@ class MultiColumnListbox(object):
                     sc = self.curso.split('-')
                     id_curso = get_idcurso_by_curso_year(sc[0], sc[1])
 
+                    horario = self.horario
+                    horario_final = horario if not horario == 'CURSO COMPLETO' else None
+    
                     actualizar_matricula(guardar, ci, id_curso)
                     # print(guardar)
                     top.destroy()
-                    self.change(get_view_matriculas_by_idcurso(id_curso))
+                    self.change(get_view_matriculas_by_idcurso(id_curso, horario_final))
 
             def cancelar():
                 top.destroy()

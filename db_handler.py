@@ -561,17 +561,24 @@ def get_matricula_by_ci_curso(ci, id_curso):
 
 
 
-def get_view_matriculas_by_idcurso(id_curso):
+def get_view_matriculas_by_idcurso(id_curso, horario=None):
 
     db = connect(DB_NAME)
     cursor = db.cursor()
 
-    sql = f'''
-    SELECT {FULL_NAME},{CI},{MUNICIPIO},{TELEFONO},{HORARIO},{CODIGO_CAT},{DATOS} 
-    FROM {V_MATRICULAS} WHERE {ID_CURSO}=?;
-    '''
-    param = [id_curso]
-
+    if not horario:
+        sql = f'''
+        SELECT {FULL_NAME},{CI},{MUNICIPIO},{TELEFONO},{HORARIO},{CODIGO_CAT},{DATOS} 
+        FROM {V_MATRICULAS} WHERE {ID_CURSO}=?;
+        '''
+        param = [id_curso]
+    else:
+        sql = f'''
+        SELECT {FULL_NAME},{CI},{MUNICIPIO},{TELEFONO},{HORARIO},{CODIGO_CAT},{DATOS} 
+        FROM {V_MATRICULAS} WHERE {ID_CURSO}=? AND {HORARIO}=?;
+        '''
+        param = [id_curso, horario]
+        
     cursor.execute(sql, param)
     fetch = cursor.fetchall()
     db.close()
@@ -581,8 +588,6 @@ def get_view_matriculas_by_idcurso(id_curso):
     else:
         return False
 
-
-# INSERTS
 
 
 def agregar_alumno(datos_alumno):

@@ -43,7 +43,7 @@ def init_multilist_alumnos(frame_container):
 
 
 
-def init_multilist_matriculas(frame_container, curso:str):
+def init_multilist_matriculas(frame_container, curso:str, horario=None):
     header_matriculas = [
         'Nombre completo',
         'Carnet Identidad',
@@ -57,8 +57,11 @@ def init_multilist_matriculas(frame_container, curso:str):
     sc = curso.split('-')
     
     id_curso = get_idcurso_by_curso_year(sc[0],sc[1])
-    matriculas_lista = get_view_matriculas_by_idcurso(id_curso)
+
+    horario_final = horario if not horario == 'CURSO COMPLETO' else None
     
+    matriculas_lista = get_view_matriculas_by_idcurso(id_curso, horario_final)
+        
     if not matriculas_lista:
         matricula_empty = ['' for _ in header_matriculas]
         matriculas_lista = []
@@ -71,7 +74,11 @@ def init_multilist_matriculas(frame_container, curso:str):
 def actualizar_treeview(treeview:MultiColumnListbox):
     sc = treeview.curso.split('-')
     id_curso = get_idcurso_by_curso_year(sc[0],sc[1])
-    matriculas_lista = get_view_matriculas_by_idcurso(id_curso)
+
+    horario = treeview.horario
+    horario_final = horario if not horario == 'CURSO COMPLETO' else None
+        
+    matriculas_lista = get_view_matriculas_by_idcurso(id_curso, horario_final)
     
     if not matriculas_lista:
         matricula_empty = ['' for _ in range(7)]

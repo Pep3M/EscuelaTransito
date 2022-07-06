@@ -96,7 +96,9 @@ def del_curso():
         id_curso = get_idcurso_by_curso_year(sc[0], sc[1])
         eliminar_curso(id_curso)
         valores_by_cbcursos(cb_curso)
+        valores_by_cbhorario(cb_horario)
         treeview.curso = cb_curso.get()
+        treeview.horario = cb_horario.get()
         actualizar_treeview(treeview)
 
 
@@ -107,10 +109,14 @@ def valores_fechas():
     lb_fecha.config(text=formato_fecha_natural(fechas))
 
 
-def elegir_curso(event):
+def bind_update_treeview(event):
     sc = cb_curso.get().split('-')
     id_curso = get_idcurso_by_curso_year(sc[0], sc[1])
-    matriculas_lista = get_view_matriculas_by_idcurso(id_curso)
+    
+    horario = cb_horario.get()
+    horario_final = horario if not horario == 'CURSO COMPLETO' else None
+    
+    matriculas_lista = get_view_matriculas_by_idcurso(id_curso, horario_final)
     fechas = get_fecha_inicio_fin_by_idcurso(id_curso)
 
     if not matriculas_lista:
@@ -120,7 +126,9 @@ def elegir_curso(event):
 
     lb_fecha.config(text=formato_fecha_natural(fechas))
     treeview.curso = cb_curso.get()
+    treeview.horario = cb_horario.get()
     treeview.change(matriculas_lista)
+
 
 
 # VISUAL #
@@ -158,7 +166,7 @@ Label(frame_superior,
 cb_curso = Combobox(frame_superior, width=8, state='readonly', font=font_big)
 cb_curso.grid(row=0, column=3, sticky='e', padx=10, pady=10)
 valores_by_cbcursos(cb_curso)
-cb_curso.bind("<<ComboboxSelected>>", elegir_curso)
+cb_curso.bind("<<ComboboxSelected>>", bind_update_treeview)
 lb_fecha = Label(frame_superior, text='',background=COLOR_DARK_BG, foreground=COLOR_FB, font=font_middle)
 lb_fecha.grid(row=0,column=4)
 valores_fechas()
@@ -176,7 +184,7 @@ Label(frame_superior,
 cb_horario = Combobox(frame_superior, width=18, state='readonly', font=font_small)
 cb_horario.grid(row=0, column=7, sticky='e', padx=10, pady=10)
 valores_by_cbhorario(cb_horario)
-cb_horario.bind("<<ComboboxSelected>>", elegir_curso)
+cb_horario.bind("<<ComboboxSelected>>", bind_update_treeview)
 
 
 
@@ -256,6 +264,6 @@ bt_del_curso.grid(row=0, column=1, padx=3, pady=5)
 tree_frame = Frame(body_frame)
 tree_frame.pack(expand=True, fill='both', side='right')
 
-treeview = init_multilist_matriculas(tree_frame, cb_curso.get())
+treeview = init_multilist_matriculas(tree_frame, cb_curso.get(), cb_horario.get())
 
 root.mainloop()
