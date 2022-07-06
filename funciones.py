@@ -88,6 +88,7 @@ def actualizar_treeview(treeview:MultiColumnListbox):
     treeview.change(matriculas_lista)
     
 
+
 def valores_by_cbcursos(cb:Combobox, curso_mostrar=None):
     valores = []
     cursos = get_cursos()

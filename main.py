@@ -1,16 +1,12 @@
-from tkinter import E, RIGHT, X, Button, Frame, Label, PhotoImage, StringVar, Tk, Toplevel, font
+from tkinter import E, EW, LEFT, RIGHT, X, Button, Frame, Label, PhotoImage, StringVar, Tk, Toplevel, font
 from tkinter.messagebox import askquestion, showwarning
 from tkinter.ttk import Combobox
 from db_handler import eliminar_curso, get_all_cat_code, get_fecha_inicio_fin_by_idcurso, get_horarios, get_idcurso_by_curso_year, get_municipios, get_view_matriculas_by_idcurso
 from funciones import actualizar_treeview, create_excel_by_curso, formato_fecha_natural, init_multilist_matriculas, valores_by_cbcursos, valores_by_cbhorario
 from security_copy import copia_seguridad_diaria
 from tkform_new_matr import Form_curso, Form_edit_curso, Form_new_matric
+from general_constants import *
 
-COLOR_DARK_BG = '#1b1e2b'
-COLOR_SOFT_BG = '#313446'
-COLOR_FB = '#a3a9c9'
-COLOR_FB_SOFT = '#444444'
-COLOR_RED_DEL = '#943444'
 
 #POSICION TOPLEVELS
 TOPX_POSITION = 160

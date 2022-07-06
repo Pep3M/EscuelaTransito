@@ -2,14 +2,14 @@
 Here the TreeView widget is configured as a multi-column listbox
 with adjustable column width and column-header-click sorting.
 '''
-from tkinter import CENTER, END, W, Button, StringVar, Text, Entry, Frame, Label, Toplevel, messagebox
+from tkinter import CENTER, END, EW, LEFT, W, Button, StringVar, Text, Entry, Frame, Label, Toplevel, messagebox
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.font as tkFont
 from db_handler import actualizar_matricula, eliminar_matr_by_ci_and_curso, get_all_cat_code, get_cursos, get_horarios, get_idcurso_by_curso_year, get_last_curso_id, get_matricula_by_ci_curso, get_municipios, get_view_matriculas_by_idcurso
+from general_constants import *
 
-GREEN_BUTTON = '#1f6e4d'
-RED_BUTTON = '#811e1d'
+
 
 
 class MultiColumnListbox(object):
@@ -34,6 +34,7 @@ class MultiColumnListbox(object):
 
         self._setup_widgets()
         self._build_tree()
+        self.setup_frame_estado()
 
         self.idRow = ''
 
@@ -143,6 +144,17 @@ class MultiColumnListbox(object):
         self.tree.bind("<<TreeviewSelect>>", self.on_select_action)
         self.tree.bind('<ButtonRelease-3>', self.do_popup)
 
+
+    def setup_frame_estado(self):
+        self.frame_estado = Frame(self.frame, bg=COLOR_DARK_BG)
+        self.frame_estado.grid(row=1,column=0, columnspan=2, sticky=EW)
+        self.lb_estado = Label(self.frame_estado, text= '', bg=COLOR_DARK_BG, fg=COLOR_FB)
+        self.lb_estado.pack(side=LEFT)
+        
+        self.actualizar_estado()
+
+
+
     # Evento creado para cuando se de doble click en un item
     def on_double_click(self, event):
         # try:
@@ -165,6 +177,8 @@ class MultiColumnListbox(object):
         for item in list:
             self.tree.insert('', 'end', values=item)
             cont += 1
+            
+        self.actualizar_estado()
 
     def on_select_action(self, event):
 
@@ -452,6 +466,13 @@ class MultiColumnListbox(object):
         #box.bind("<<ComboboxSelected>>", combobox_elegir)
         return box
 
+    def actualizar_estado(self):
+        cantidad_matriculas = len(self.list)
+        texto_matri = f'{cantidad_matriculas} matriculas' if int(cantidad_matriculas) > 1 else f'{cantidad_matriculas} matricula'
+        
+        if self.list[0][0] == '': texto_matri=''
+        
+        self.lb_estado.config(text=texto_matri)
 
 def sortby(tree, col, descending):
     """sort tree contents when a column header is clicked on"""
