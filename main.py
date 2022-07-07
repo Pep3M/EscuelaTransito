@@ -50,7 +50,7 @@ def crear_curso():
 
     top = Toplevel()
     w = 300
-    h = 220
+    h = 340
     top.geometry("%dx%d+%d+%d" % (w, h, x + TOPX_POSITION, y + TOPY_POSITION))
 
     top.title('Agregando curso')
@@ -68,7 +68,7 @@ def editar_curso():
 
     top = Toplevel()
     w = 300
-    h = 220
+    h = 340
     top.geometry("%dx%d+%d+%d" % (w, h, x + TOPX_POSITION, y + TOPY_POSITION))
 
     top.title('Agregando curso')

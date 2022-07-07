@@ -24,6 +24,7 @@ MATRICULA_INIT = 'matricula_init'
 YEAR = 'year'
 FECHA_INICIAL = 'fecha_inicial'
 FECHA_FINAL = 'fecha_final'
+MODELO_INIT = 'modelo_init'
 
 # T_HORARIOS
 HORARIO = 'horario'

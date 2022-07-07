@@ -180,11 +180,11 @@ def datos_iniciales(db):
 
     # primer curso
     sql = '''
-    INSERT OR IGNORE INTO %s (%s,%s,%s)
-    VALUES (?,?,?)
+    INSERT OR IGNORE INTO %s (%s,%s,%s,%s,%s,%s)
+    VALUES (?,?,?,?,?,?)
     ''' % (T_CURSOS, NOMBRE_CURSO, MATRICULA_INIT, YEAR, FECHA_INICIAL,
-           FECHA_FINAL)
-    param = ['10', 615, 2022, '08/07/2022', '20/07/2022']
+           FECHA_FINAL,MODELO_INIT)
+    param = ['10', 615, 2022, '08/07/2022', '20/07/2022',26]
     db.cursor().execute(sql, param)
 
     # horario inicial
@@ -201,6 +201,33 @@ def datos_iniciales(db):
         param = [horario[0], horario[1]]
         db.cursor().execute(sql, param)
 
+
+@conexion_db
+def add_column_model_num_to_cursos(db:Connection):
+    """
+    Creamos este metodo provicional para crear el campo y valor inicial para que los modelos queden enumerados correctamente
+
+    Args:
+        db (Connection): Recibe db y metodos como decorador
+    """
+    c = db.cursor()
+
+    sql = f'''
+    ALTER TABLE {T_CURSOS} ADD COLUMN [{MODELO_INIT}] [INTEGER]
+    '''
+    sql2 = f'''
+    UPDATE {T_CURSOS} SET {MODELO_INIT}=?;
+    '''
+    parm = [26]
+    
+    try:
+        c.execute(sql)
+        db.commit()
+        c.execute(sql2, parm)
+    except:
+        pass
+    
+add_column_model_num_to_cursos()
 
 @conexion_db
 def agregar_fecha_al_horario(db: Connection):
@@ -225,7 +252,20 @@ if not path.exists(DB_NAME):
 #create_tables()
 #agregar_fecha_al_horario()
 
+
+
+
 # Consultas (SELECTS)
+
+def get_modelo_init_by_idcurso(id_curso):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+    sql = 'SELECT %s FROM %s WHERE id=?' % (MODELO_INIT, T_CURSOS)
+    parm = [id_curso]
+    cursor.execute(sql, parm)
+    elementos = cursor.fetchone()
+    db.close()
+    return elementos[0]
 
 
 @conexion_db
@@ -334,8 +374,8 @@ def get_matr_init_by_id(id_curso) -> int:
 def get_last_curso_id(db: Connection):
     cursor = db.cursor()
     sql = '''
-    SELECT %s FROM %s ORDER BY %s,%s DESC LIMIT 1;
-    ''' % ('id', T_CURSOS, NOMBRE_CURSO, YEAR)
+    SELECT %s FROM %s ORDER BY %s DESC,%s DESC LIMIT 1;
+    ''' % ('id', T_CURSOS, YEAR, NOMBRE_CURSO)
 
     cursor.execute(sql)
 
@@ -393,14 +433,14 @@ def get_campo_datos_idcursos(idcurso):
     db.close()
 
 
-def actualizar_curso(id_curso, nombre, year, f_ini, f_fin, datos):
+def actualizar_curso(id_curso, nombre, year, f_ini, f_fin, datos, matri_ini, model_ini):
     db = connect(DB_NAME)
     cursor = db.cursor()
 
     sql = f'''
-    UPDATE {T_CURSOS} SET {NOMBRE_CURSO}=?, {YEAR}=?, {FECHA_INICIAL}=?, {FECHA_FINAL}=?, {DATOS}=? WHERE id=?
+    UPDATE {T_CURSOS} SET {NOMBRE_CURSO}=?, {YEAR}=?, {FECHA_INICIAL}=?, {FECHA_FINAL}=?, {DATOS}=?, {MATRICULA_INIT}=?, {MODELO_INIT}=? WHERE id=?
     '''
-    param = [nombre, year, f_ini, f_fin, datos, id_curso]
+    param = [nombre, year, f_ini, f_fin, datos, matri_ini, model_ini, id_curso]
     cursor.execute(sql, param)
 
     db.commit()
@@ -782,15 +822,15 @@ def get_fecha_inicio_fin_by_idcurso(id_curso):
     return False
 
 
-def agregar_curso(name_curso, year, f_ini, f_fin, datos) -> int | bool:
+def agregar_curso(name_curso, year, f_ini, f_fin, datos, matri_ini, model_ini) -> int | bool:
     db = connect(DB_NAME)
     cursor = db.cursor()
 
     sql = f'''
-    INSERT OR IGNORE INTO {T_CURSOS}({NOMBRE_CURSO},{YEAR},{FECHA_INICIAL},{FECHA_FINAL},{DATOS})
-    VALUES (?,?,?,?,?)
+    INSERT OR IGNORE INTO {T_CURSOS}({NOMBRE_CURSO},{YEAR},{FECHA_INICIAL},{FECHA_FINAL},{DATOS},{MATRICULA_INIT},{MODELO_INIT})
+    VALUES (?,?,?,?,?,?,?)
     '''
-    param = [str(name_curso), int(year), f_ini, f_fin, datos]
+    param = [str(name_curso), int(year), f_ini, f_fin, datos, matri_ini, model_ini]
     cursor.execute(sql, param)
     db.commit()
     db.close()
@@ -813,4 +853,62 @@ def get_last_matricula_date(db:Connection):
     
     if fetch:
         return fetch[0]
+    
+    
+def get_matric_model_init_by_idcurso(idcurso) -> list:
+    
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+
+    sql = f'''
+    SELECT {MATRICULA_INIT},{MODELO_INIT} FROM {T_CURSOS} 
+    WHERE id=?
+    '''
+    par= [idcurso]
+    
+    cursor.execute(sql,par)
+
+    fetch = cursor.fetchone()
+    
+    if fetch:
+        return fetch
+    
+@conexion_db
+def get_new_matric_model_init(db:Connection) -> list:
+
+    idcurso = get_last_curso_id()
+    
+    cursor = db.cursor()
+
+    sql = f'''
+    SELECT {MATRICULA_INIT},{MODELO_INIT} FROM {T_CURSOS} 
+    WHERE id=?
+    '''
+    par= [idcurso]
+    
+    cursor.execute(sql,par)
+
+    fetch = cursor.fetchone()
+    
+    if fetch:
+        matr_ini = fetch[0]
+        model_ini = fetch[1]
+        
+        matriculas = get_view_matriculas_by_idcurso(idcurso)
+        cant_matr = len(matriculas) if matriculas else 0
+        cant_hor = 0
+
+        if matriculas:
+            horarios = get_horarios()
+            
+            for horario in horarios:
+                for matricula in matriculas:
+                    if horario in matricula[4]:
+                        cant_hor += 1
+                        break
+        
+        
+        # matricula inicial mas la cantidad de matriculas hechas ese curso
+        # numero en los modelos, mas la cantidad de horarios q hay, lo que da los numeros nuevos
+        return [matr_ini+cant_matr, model_ini+cant_hor]
     

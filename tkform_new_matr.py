@@ -1,11 +1,11 @@
 from datetime import datetime
 from msilib.schema import ComboBox
-from tkinter import END, Button, Entry, Frame, Label, StringVar, Text, Tk, font
+from tkinter import CENTER, END, Button, Entry, Frame, Label, StringVar, Text, Tk, font
 from tkinter.messagebox import showerror
 from tkinter.ttk import Combobox
 from MultiListBox_class import MultiColumnListbox
-from db_handler import actualizar_curso, agregar_curso, agregar_matricula, get_campo_datos_idcursos, get_curso_by_id, get_fecha_inicio_fin_by_idcurso, get_idcurso_by_curso_year, get_matricula_by_ci_curso, get_view_matriculas_by_idcurso
-from funciones import actualizar_treeview, formato_fecha_natural, valores_by_cbcursos
+from db_handler import actualizar_curso, agregar_curso, agregar_matricula, get_campo_datos_idcursos, get_curso_by_id, get_fecha_inicio_fin_by_idcurso, get_idcurso_by_curso_year, get_matric_model_init_by_idcurso, get_matricula_by_ci_curso, get_new_matric_model_init, get_view_matriculas_by_idcurso
+from funciones import actualizar_treeview, formato_fecha_natural, get_new_curso_number, valores_by_cbcursos
 from tkcalendar import DateEntry
 
 GREEN_BUTTON = '#1f6e4d'
@@ -189,6 +189,8 @@ class Form_curso():
                  combobox, lb_fecha) -> None:
 
         year_hoy = datetime.now().year
+        matr_model_init = get_new_matric_model_init()
+        new_curso_number = get_new_curso_number()
 
         self.frame_father = frame_father
         self.frame_container = Frame(frame_father)
@@ -199,11 +201,16 @@ class Form_curso():
 
         # StringVar
         self.sv_name = StringVar()
+        self.sv_name.set(new_curso_number)
         self.sv_year = StringVar()
         self.sv_year.set(year_hoy)
         self.sv_fechaini = StringVar()
         self.sv_fechafin = StringVar()
         self.sv_datos = StringVar()
+        self.sv_matr_ini = StringVar()
+        self.sv_matr_ini.set(matr_model_init[0])
+        self.sv_model_ini = StringVar()
+        self.sv_model_ini.set(matr_model_init[1])
 
         # labels
         self.lb_name = Label(self.frame_container, text='Curso')
@@ -211,12 +218,17 @@ class Form_curso():
         self.lb_fecha_ini = Label(self.frame_container, text='Fecha inicio')
         self.lb_fecha_fin = Label(self.frame_container, text='Fecha final')
         self.lb_datos = Label(self.frame_container, text='Otros datos')
+        frame_numbers = Frame(self.frame_container, bg='#dddddd', padx=5, pady=5)
+        Label(frame_numbers, text='Valores iniciales del curso (no modificar)', bg='#dddddd').grid(row=0, column=0, columnspan=2, sticky='ew', pady=5, padx=10)
+        Label(frame_numbers, text='Matricula', bg='#dddddd').grid(row=1, column=0, sticky='ew', pady=2, padx=5)
+        Label(frame_numbers, text='Modelos', bg='#dddddd').grid(row=1, column=1, sticky='ew', pady=2, padx=5)
         # labels grid
         self.lb_name.grid(row=1, column=0, sticky='w', pady=5, padx=10)
         self.lb_year.grid(row=2, column=0, sticky='w', pady=5, padx=10)
         self.lb_fecha_ini.grid(row=3, column=0, sticky='w', pady=5, padx=10)
         self.lb_fecha_fin.grid(row=4, column=0, sticky='w', pady=5, padx=10)
         self.lb_datos.grid(row=5, column=0, sticky='wn', pady=5, padx=10)
+        frame_numbers.grid(row=6, column=0, columnspan=2, sticky='w', pady=10, padx=10)
 
         # entrys
         self.e_name = Entry(self.frame_container,
@@ -238,14 +250,23 @@ class Form_curso():
         self.e_datos = Entry(self.frame_container,
                              textvariable=self.sv_datos,
                              width=15)
+        self.e_matr_ini = Entry(frame_numbers,
+                             textvariable=self.sv_matr_ini,
+                             width=8, justify=CENTER)
+        self.e_model_ini = Entry(frame_numbers,
+                             textvariable=self.sv_model_ini,
+                             width=8, justify=CENTER)
         # entrys grid
         self.e_name.grid(row=1, column=1, sticky='w', pady=5)
         self.e_year.grid(row=2, column=1, sticky='w', pady=5)
         self.e_fechaini.grid(row=3, column=1, sticky='w', pady=5)
         self.e_fechafin.grid(row=4, column=1, sticky='w', pady=5)
         self.e_datos.grid(row=5, column=1, sticky='w', pady=5)
+        self.e_matr_ini.grid(row=2, column=0, pady=5)
+        self.e_model_ini.grid(row=2, column=1, pady=5)
 
-        self.e_name.focus_set()
+        self.e_name.focus()
+        self.e_name.selection_to(END)
         """ self.frame_bts = Frame(self.frame_container)
         self.frame_bts.grid(row=8, column=1, rowspan=2, sticky='e') """
 
@@ -255,14 +276,14 @@ class Form_curso():
                                  background=GREEN_BUTTON,
                                  fg='white',
                                  width=8)
-        self.bt_aceptar.grid(row=8, column=0, padx=10, pady=10)
+        self.bt_aceptar.grid(row=8, column=0, padx=10, pady=20, sticky='e')
         self.bt_cancelar = Button(self.frame_container,
                                   text='Cancelar',
                                   command=self.cancelar,
                                   bg=RED_BUTTON,
                                   fg='white',
                                   width=8)
-        self.bt_cancelar.grid(row=8, column=1, padx=10, pady=10)
+        self.bt_cancelar.grid(row=8, column=1, padx=10, pady=20, sticky='w')
 
         self.e_name.bind('<FocusOut>', self.bind_check_dos_dig)
         self.frame_father.bind('<Return>', self.bind_aceptar)
@@ -276,6 +297,8 @@ class Form_curso():
         f_ini = self.sv_fechaini.get()
         f_fin = self.sv_fechafin.get()
         datos = self.sv_datos.get()
+        matr_ini = self.sv_matr_ini.get()
+        model_ini = self.sv_model_ini.get()
 
         if not self.check_required_fields():
             showerror(
@@ -285,7 +308,7 @@ class Form_curso():
         else:
             #metodo externo no reutilizable
             id_curso_agregado = agregar_curso(name_curso, year, f_ini, f_fin,
-                                              datos)
+                                              datos, matr_ini, model_ini)
 
             if id_curso_agregado == 0:
                 showerror(
@@ -344,6 +367,7 @@ class Form_edit_curso(Form_curso):
     def __init__(self, frame_father: Frame | Tk, treeview: MultiColumnListbox,
                  combobox: Combobox, lb_fecha) -> None:
         super().__init__(frame_father, treeview, combobox, lb_fecha)
+        
         curso_year = combobox.get().split('-')
         curso_name = curso_year[0]
         curso_year = curso_year[1]
@@ -352,12 +376,17 @@ class Form_edit_curso(Form_curso):
         datos = get_campo_datos_idcursos(self.id_curso)
         if not datos:
             datos = ''
+        matri_model_ini = get_matric_model_init_by_idcurso(self.id_curso)
+        matr_ini = matri_model_ini[0]
+        model_ini = matri_model_ini[1]
 
         self.sv_name.set(curso_name)
         self.sv_year.set(curso_year)
         self.sv_fechaini.set(fechas[0])
         self.sv_fechafin.set(fechas[1])
         self.sv_datos.set(datos)
+        self.sv_matr_ini.set(matr_ini)
+        self.sv_model_ini.set(model_ini)
 
         self.e_name.selection_adjust(END)
 
@@ -371,6 +400,8 @@ class Form_edit_curso(Form_curso):
         f_ini = self.sv_fechaini.get()
         f_fin = self.sv_fechafin.get()
         datos = self.sv_datos.get()
+        matr_ini = self.sv_matr_ini.get()
+        model_ini = self.sv_model_ini.get()
 
         if not self.check_required_fields():
             showerror(
@@ -379,7 +410,7 @@ class Form_edit_curso(Form_curso):
             )
         else:
             actualizar_curso(self.id_curso, name_curso, year, f_ini, f_fin,
-                             datos)
+                             datos, matr_ini, model_ini)
 
             self.frame_father.destroy()
             valores_by_cbcursos(self.combobox, f'{name_curso}-{year}')

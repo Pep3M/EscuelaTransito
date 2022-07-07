@@ -3,7 +3,7 @@ from tkinter import filedialog
 from tkinter.ttk import Combobox
 from MultiListBox_class import MultiColumnListbox
 from curso_modelo import CursoModelo
-from db_handler import get_all_alumnos, get_alumnos_for_excel, get_cursos, get_fecha_inicio_fin_by_idcurso, get_horario_by_id, get_horarios, get_id_horarios, get_idcurso_by_curso_year, get_matr_init_by_id, get_view_matriculas_by_idcurso, set_matriculas_by_id_horario_idcurso
+from db_handler import get_all_alumnos, get_alumnos_for_excel, get_curso_by_id, get_cursos, get_fecha_inicio_fin_by_idcurso, get_horario_by_id, get_horarios, get_id_horarios, get_idcurso_by_curso_year, get_last_curso_id, get_matr_init_by_id, get_modelo_init_by_idcurso, get_view_matriculas_by_idcurso, set_matriculas_by_id_horario_idcurso
 from cmd_abrir_carpeta_explorer import abrirCarpeta
 from db_constantes import *
 
@@ -174,6 +174,9 @@ def create_excel_by_curso(curso:str):
         horario = get_horario_by_id(inicial[1])[0]
         alumnos = get_alumnos_for_excel(idcurso,horario)
         
+        try: modelo_num = get_modelo_init_by_idcurso(idcurso)
+        except: modelo_num = 1
+        
         cursoxls = CursoModelo(matricula_inicial)
         cursoxls.fecha_horario(fechas[0],fechas[1], horario)
         cursoxls.agregar_lote_matriculas(alumnos)
@@ -192,8 +195,13 @@ def create_excel_by_curso(curso:str):
         if not path.exists(ruta_export): mkdir(ruta_export)
         
         for i, cur in enumerate(cursos_xlsx):
-            cur.exportar(f'{ruta_export}/curso {i+1}.xlsx')
+            cur.exportar(f'{ruta_export}/curso {i+modelo_num}.xlsx')
                 
         abrirCarpeta(ruta_export)
     
+def get_new_curso_number():
+    id_last_curso = get_last_curso_id()
+    curso_full = get_curso_by_id(id_last_curso).split('-')
+    curso_number = int(curso_full[0])
     
+    return curso_number + 1
