@@ -2,7 +2,7 @@ from os import mkdir, path
 from tkinter import filedialog
 from tkinter.ttk import Combobox
 from MultiListBox_class import MultiColumnListbox
-from curso_modelo import CursoModelo
+from curso_modelo import AulaModelo, CursoModelo
 from db_handler import get_all_alumnos, get_alumnos_for_excel, get_curso_by_id, get_cursos, get_fecha_inicio_fin_by_idcurso, get_horario_by_id, get_horarios, get_id_horarios, get_idcurso_by_curso_year, get_last_curso_id, get_matr_init_by_id, get_modelo_init_by_idcurso, get_view_matriculas_by_idcurso, set_matriculas_by_id_horario_idcurso
 from cmd_abrir_carpeta_explorer import abrirCarpeta
 from db_constantes import *
@@ -147,8 +147,29 @@ def formato_fecha_natural(fechas:list | tuple):
         return f'{d_inicio} al {d_fin} de {m_fin}'
     else:
         return f'{d_inicio} de {m_inicio} al {d_fin} de {m_fin}'
+
+
+def alumnos_para_aula(lista_bruta:list[list]):
+    lista_final = []
+    for fila in lista_bruta:
+        nomb = fila[0]
+        ci = fila[1]
+        tel = str(fila[2])
+        mun = fila[3]
+
+        if tel:
+            tels = tel.split(' ')
+            tel = ''
+            for item in tels:
+                if item[0:1] == '5' and len(item) == 8:
+                    tel = item
+                    break
+            
+            if tel == '': tel = tels[0]
         
-        
+        # agregamos a la nueva fila estos datos, falta la unidad, segun municipio
+        lista_final.append([nomb,ci,tel,''])
+    return lista_final 
     
 def create_excel_by_curso(curso:str):
     sc = curso.split('-')
@@ -156,6 +177,7 @@ def create_excel_by_curso(curso:str):
     matr_init = get_matr_init_by_id(idcurso)
     fechas = get_fecha_inicio_fin_by_idcurso(idcurso)
     
+    ''.s
     
     # primero vamos a guardar en db las matriculas por horarios
     num_matricula = matr_init
@@ -168,20 +190,36 @@ def create_excel_by_curso(curso:str):
     
     # vamos pal excel. creamos una lista de objetos tipo cursos.xlsx
     cursos_xlsx = []
+    registros_xlsx = []
+    aula_xlsx = []
 
     for inicial in lista_iniciales:
         matricula_inicial = inicial[0]
         horario = get_horario_by_id(inicial[1])[0]
-        alumnos = get_alumnos_for_excel(idcurso,horario)
+        alumnos_con_dni = get_alumnos_for_excel(idcurso,horario)
+        alumnos = [alumno[0] for alumno in alumnos_con_dni]
+        alumnos_aula = alumnos_para_aula(alumnos_con_dni)
         
         try: modelo_num = get_modelo_init_by_idcurso(idcurso)
         except: modelo_num = 1
         
+        #cursos 
         cursoxls = CursoModelo(matricula_inicial)
         cursoxls.fecha_horario(fechas[0],fechas[1], horario)
-        cursoxls.agregar_lote_matriculas(alumnos)
-        
+        cursoxls.agregar_lote_matriculas(alumnos_con_dni)
         cursos_xlsx.append(cursoxls)
+        
+        # registro asistencia
+        registro_xls = CursoModelo(matricula_inicial)
+        registro_xls.fecha_horario(fechas[0],fechas[1], horario)
+        registro_xls.agregar_lote_matriculas(alumnos)
+        registros_xlsx.append(registro_xls)
+    
+        # aula modelo
+        aula_xls = AulaModelo(matricula_inicial)
+        aula_xls.fecha_horario(fechas[0],fechas[1], horario)
+        aula_xls.agregar_lote_matriculas(alumnos_aula)
+        aula_xlsx.append(aula_xls)
     
     
     ruta = filedialog.askdirectory(title='Elige donde desea crear la carpeta con los documentos guardados')
@@ -194,11 +232,20 @@ def create_excel_by_curso(curso:str):
         ruta_export = path.join(ruta,nombre_carpeta_final)
         if not path.exists(ruta_export): mkdir(ruta_export)
         
+        ruta_aula_export = path.join(ruta_export,'Asistencia para aula')
+        if not path.exists(ruta_aula_export): mkdir(ruta_aula_export)
+        
         for i, cur in enumerate(cursos_xlsx):
-            cur.exportar(f'{ruta_export}/curso {i+modelo_num}.xlsx')
+            # cursos
+            cur.exportar(f'{ruta_export}/Curso {i+modelo_num}.xlsx')
+            # registro asistencia
+            registros_xlsx[i].exportar(f'{ruta_export}/Registro de asistencia {i+modelo_num}.xlsx')
+            # aula
+            aula_xlsx[i].exportar(f'{ruta_aula_export}/{i+modelo_num}.xlsx')
                 
         abrirCarpeta(ruta_export)
     
+
 def get_new_curso_number():
     id_last_curso = get_last_curso_id()
     curso_full = get_curso_by_id(id_last_curso).split('-')

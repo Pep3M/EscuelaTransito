@@ -94,22 +94,22 @@ class MultiColumnListbox(object):
             # adjust the column's width to the header string
             self.tree.column(col,
                              width=tkFont.Font().measure(col.title()),
-                             minwidth=100,
+                             minwidth=50,
                              anchor=CENTER)
 
             # ancho de columnas condicionales (cambiar codigo por uno mas reutilizable)
             if i == 0:
                 self.tree.column(col, width=220, anchor=W)
             if i == 1:
-                self.tree.column(col, width=100)
+                self.tree.column(col, width=70)
             if i == 2:
-                self.tree.column(col, width=150, anchor=W)
+                self.tree.column(col, width=120, anchor=W)
             if i == 3:
-                self.tree.column(col, width=50)
+                self.tree.column(col, width=100)
             if i == 4:
-                self.tree.column(col, width=80)
+                self.tree.column(col, width=100)
             if i == 5:
-                self.tree.column(col, width=50)
+                self.tree.column(col, width=40)
             if i == 6:
                 self.tree.column(col, width=150, anchor=W)
 
@@ -328,7 +328,7 @@ class MultiColumnListbox(object):
             # entrys
             e_name = Entry(top, width=30, textvariable=sv_name)
             e_ci = Entry(top, width=30, textvariable=sv_ci)
-            e_tel = Entry(top, width=10)
+            e_tel = Entry(top, width=30)
             e_municipio = self.combobox(top, municipios, width=27)
             e_categoria = self.combobox(top, cat_code, width=27)
             e_horario = self.combobox(top, horarios, width=27)

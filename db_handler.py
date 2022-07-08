@@ -314,7 +314,7 @@ def get_alumnos_for_excel(id_curso, horario):
     cursor = db.cursor()
 
     sql2 = f'''
-    SELECT {FULL_NAME},{CI} FROM {V_MATRICULAS} WHERE {HORARIO}=? AND {ID_CURSO}=?
+    SELECT {FULL_NAME},{CI},{TELEFONO},{MUNICIPIO} FROM {V_MATRICULAS} WHERE {HORARIO}=? AND {ID_CURSO}=?
     '''
     param2 = [horario, id_curso]
 

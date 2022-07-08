@@ -16,7 +16,7 @@ class CursoModelo():
         self.ws['A4'].value = f'Instructor:     Yamilet Reyes Valdes                                                   Firma:                                           Horario:   {horario}'
 
 
-    def agregar_matricula(self, nombre:str, dni:str):
+    def agregar_matricula(self, nombre:str, dni:str=''):
         # buscamos una celda vacia para agregar la matricula
         for i in range(9,36):
             
@@ -24,21 +24,78 @@ class CursoModelo():
                 # agregamos el nombre
                 self.ws[f'B{i}'].value = nombre
             
-                # agregamos dni    
-                for col in range(3,13):
-                    self.ws[f'{get_column_letter(col)}{i}'].value = dni[col-3]
-                self.ws[f'S{i}'].value = dni[10]
+                # agregamos dni
+                if not dni == '':    
+                    for col in range(3,13):
+                        self.ws[f'{get_column_letter(col)}{i}'].value = dni[col-3]
+                    self.ws[f'S{i}'].value = dni[10]
                 
                 break
 
 
     def agregar_lote_matriculas(self, lista:list[list]):
         for item in lista:
-            self.agregar_matricula(item[0],item[1])
+            if type(item) == str:
+                self.agregar_matricula(item)
+            else:
+                self.agregar_matricula(item[0],item[1])
             
     
     def exportar(self, file):
         self.wb.save(file)
+
+
+class AulaModelo():
+
+    def __init__(self, matricula_inicial) -> None:
+        TEMPLATE_AULA_URL = 'assets/templates/Teorico para aula MODELO.xlsx'
+        self.wb = load_workbook(TEMPLATE_AULA_URL)
+        self.ws = self.wb.active
+        self.ws['A9'].value = matricula_inicial
+
+
+    def fecha_horario(self, fecha_inicio, fecha_final, horario):
+        self.ws['A3'].value = f'Fecha inicio: {fecha_inicio}                                                       Fecha Termino: {fecha_final}                                Grupo: cp'
+        self.ws['A4'].value = f'Instructor:     Yamilet Reyes Valdes                                                   Firma:                                           Horario:   {horario}'
+
+
+    def agregar_matricula(self, nombre:str, dni:str='', tel='', unidad=''):
+        # buscamos una celda vacia para agregar la matricula
+        for i in range(9,36):
+            
+            if self.ws[f'B{i}'].value == None:
+                # agregamos el nombre
+                self.ws[f'B{i}'].value = nombre
+            
+                # agregamos dni
+                if not dni == '':    
+                    for col in range(3,14):
+                        self.ws[f'{get_column_letter(col)}{i}'].value = dni[col-3]
+                
+                #tel
+                if not tel == '':
+                    self.ws[f'N{i}'].value = tel
+                
+                #unidad
+                if not unidad == '':
+                    self.ws[f'P{i}'].value = unidad
+                
+                break
+
+
+    def agregar_lote_matriculas(self, lista:list[list]):
+        for item in lista:
+            if type(item) == str:
+                self.agregar_matricula(item)
+            else:
+                self.agregar_matricula(item[0],item[1],item[2],item[3])
+            
+    
+    def exportar(self, file):
+        self.wb.save(file)
+
+
+
 
 
 def crear_curso_prueba():

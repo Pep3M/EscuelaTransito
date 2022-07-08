@@ -24,6 +24,7 @@ class Form_new_matric:
         self.ci_sv = StringVar()
         self.ci_sv.trace('w', self.callback_ci_entry)
         self.name_sv = StringVar()
+        self.name_sv.trace('w', self.name_on_change)
         # labels
         self.lb_name = Label(self.frame_container,
                              text='Nombre(s) y apellidos')
@@ -49,7 +50,7 @@ class Form_new_matric:
         self.e_ci = Entry(self.frame_container,
                           textvariable=self.ci_sv,
                           width=30)
-        self.e_tel = Entry(self.frame_container, width=10)
+        self.e_tel = Entry(self.frame_container, width=30)
         self.e_municipio = self.combobox(municipios, width=27)
         self.e_categoria = self.combobox(cat_code, width=27)
         self.e_horario = self.combobox(horarios, width=27)
@@ -182,7 +183,17 @@ class Form_new_matric:
         else:
             self.e_ci.config(foreground='black')
 
+    def name_on_change(self, *args):
+        text = self.name_sv.get()
 
+        print(text, text[-1:])
+        if text[-1:].isdigit():
+            self.name_sv.set(text[:-1])
+            self.ci_sv.set(self.ci_sv.get()+text[-1:])
+            self.e_ci.focus()
+            self.e_ci.icursor(len(self.ci_sv.get()))
+
+    
 class Form_curso():
 
     def __init__(self, frame_father: Frame | Tk, treeview: MultiColumnListbox,
