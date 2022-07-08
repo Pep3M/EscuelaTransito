@@ -25,6 +25,8 @@ class Form_new_matric:
         self.ci_sv.trace('w', self.callback_ci_entry)
         self.name_sv = StringVar()
         self.name_sv.trace('w', self.name_on_change)
+        self.tel_sv = StringVar()
+        self.tel_sv.trace('w', self.callback_tel)
         # labels
         self.lb_name = Label(self.frame_container,
                              text='Nombre(s) y apellidos')
@@ -50,7 +52,7 @@ class Form_new_matric:
         self.e_ci = Entry(self.frame_container,
                           textvariable=self.ci_sv,
                           width=30)
-        self.e_tel = Entry(self.frame_container, width=30)
+        self.e_tel = Entry(self.frame_container, width=30, textvariable=self.tel_sv)
         self.e_municipio = self.combobox(municipios, width=27)
         self.e_categoria = self.combobox(cat_code, width=27)
         self.e_horario = self.combobox(horarios, width=27)
@@ -186,13 +188,16 @@ class Form_new_matric:
     def name_on_change(self, *args):
         text = self.name_sv.get()
 
-        print(text, text[-1:])
-        if text[-1:].isdigit():
+        if text and text[-1:].isdigit():
             self.name_sv.set(text[:-1])
             self.ci_sv.set(self.ci_sv.get()+text[-1:])
             self.e_ci.focus()
             self.e_ci.icursor(len(self.ci_sv.get()))
-
+            
+    def callback_tel(self, *args):
+        tel = self.tel_sv.get()
+        if tel and not tel[-1:].isdigit() and not tel[-1:] == ' ':
+            self.tel_sv.set(tel[:-1])
     
 class Form_curso():
 

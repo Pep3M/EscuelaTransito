@@ -226,6 +226,7 @@ class MultiColumnListbox(object):
             # StringVars
             sv_name = StringVar()
             sv_ci = StringVar()
+            sv_tel = StringVar()
 
             def check_required_fields():
                 return e_name.get() and e_ci.get()
@@ -305,7 +306,12 @@ class MultiColumnListbox(object):
                 else:
                     e_ci.config(foreground='black')
 
+            def callback_tel(*args):
+                tel = sv_tel.get()
+                if tel and not tel[-1:].isdigit() and not tel[-1:] == ' ':
+                    sv_tel.set(tel[:-1])
             sv_ci.trace('w', callback_ci_entry)
+            sv_tel.trace('w', callback_tel)
 
             guardar = []
             # labels
@@ -328,7 +334,7 @@ class MultiColumnListbox(object):
             # entrys
             e_name = Entry(top, width=30, textvariable=sv_name)
             e_ci = Entry(top, width=30, textvariable=sv_ci)
-            e_tel = Entry(top, width=30)
+            e_tel = Entry(top, width=30, textvariable=sv_tel)
             e_municipio = self.combobox(top, municipios, width=27)
             e_categoria = self.combobox(top, cat_code, width=27)
             e_horario = self.combobox(top, horarios, width=27)
