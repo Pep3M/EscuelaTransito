@@ -177,7 +177,6 @@ def create_excel_by_curso(curso:str):
     matr_init = get_matr_init_by_id(idcurso)
     fechas = get_fecha_inicio_fin_by_idcurso(idcurso)
     
-    ''.s
     
     # primero vamos a guardar en db las matriculas por horarios
     num_matricula = matr_init
