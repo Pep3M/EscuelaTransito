@@ -179,6 +179,19 @@ class MultiColumnListbox(object):
             cont += 1
             
         self.actualizar_estado()
+        
+    def change_temp (self, list):
+        # borrar toda la lista para crear una nueva
+        for child in self.tree.get_children():
+            self.tree.delete(child)
+
+        cont = 0
+
+        for item in list:
+            self.tree.insert('', 'end', values=item)
+            cont += 1
+            
+        self.actualizar_estado(list)
 
     def on_select_action(self, event):
 
@@ -472,11 +485,13 @@ class MultiColumnListbox(object):
         #box.bind("<<ComboboxSelected>>", combobox_elegir)
         return box
 
-    def actualizar_estado(self):
-        cantidad_matriculas = len(self.list)
+    def actualizar_estado(self, lista=None):
+        cantidad_matriculas = len(self.list) if lista == None else len(lista)
+        
         texto_matri = f'{cantidad_matriculas} matriculas' if int(cantidad_matriculas) > 1 else f'{cantidad_matriculas} matricula'
         
-        if self.list[0][0] == '': texto_matri=''
+        if self.list:
+            if self.list[0][0] == '': texto_matri=''
         
         self.lb_estado.config(text=texto_matri)
 

@@ -1,12 +1,12 @@
-from tkinter import E, EW, LEFT, RIGHT, X, Button, Frame, Label, PhotoImage, StringVar, Tk, Toplevel, font
+import re
+from tkinter import CENTER, E, EW, LEFT, RIGHT, W, X, Button, Checkbutton, Entry, Frame, Label, PhotoImage, StringVar, Tk, Toplevel, font
 from tkinter.messagebox import askquestion, showwarning
 from tkinter.ttk import Combobox
-from db_handler import eliminar_curso, get_all_cat_code, get_fecha_inicio_fin_by_idcurso, get_horarios, get_idcurso_by_curso_year, get_municipios, get_view_matriculas_by_idcurso
+from db_handler import eliminar_curso, get_ALL_view_matriculas, get_all_cat_code, get_fecha_inicio_fin_by_idcurso, get_horarios, get_idcurso_by_curso_year, get_municipios, get_view_matriculas_by_idcurso
 from funciones import actualizar_treeview, create_excel_by_curso, formato_fecha_natural, init_multilist_matriculas, valores_by_cbcursos, valores_by_cbhorario
 from security_copy import copia_seguridad_diaria
 from tkform_new_matr import Form_curso, Form_edit_curso, Form_new_matric
 from general_constants import *
-
 
 #POSICION TOPLEVELS
 TOPX_POSITION = 160
@@ -108,10 +108,10 @@ def valores_fechas():
 def bind_update_treeview(event):
     sc = cb_curso.get().split('-')
     id_curso = get_idcurso_by_curso_year(sc[0], sc[1])
-    
+
     horario = cb_horario.get()
     horario_final = horario if not horario == 'CURSO COMPLETO' else None
-    
+
     matriculas_lista = get_view_matriculas_by_idcurso(id_curso, horario_final)
     fechas = get_fecha_inicio_fin_by_idcurso(id_curso)
 
@@ -125,6 +125,54 @@ def bind_update_treeview(event):
     treeview.horario = cb_horario.get()
     treeview.change(matriculas_lista)
 
+
+def buscar():
+
+    if all_check_sv.get() == '0':
+        lista_treeview = treeview.list   
+    else: 
+        lista_treeview = get_ALL_view_matriculas()
+        
+    
+    typed = buscar_sv.get()
+    listaContenedora = []
+    palabras = typed.split(' ')
+
+    for i, palabra in enumerate(palabras):
+
+        listaPreliminar = []
+        if i == 0:
+            for fila in lista_treeview:
+                for elemento in fila:
+                    if re.search(palabra, str(elemento),
+                                 re.IGNORECASE | re.UNICODE):
+                        listaPreliminar.append(fila)
+                        break
+        else:
+            for fila in listaContenedora[(len(listaContenedora)) - 1]:
+                for elemento in fila:
+                    if re.search(palabra, str(elemento),
+                                 re.IGNORECASE | re.UNICODE):
+                        listaPreliminar.append(fila)
+                        break
+        listaContenedora.append(listaPreliminar)
+
+    lista_treeview = listaContenedora[(len(listaContenedora)) - 1]
+    treeview.change_temp(lista_treeview)
+
+
+def callback_buscar_sv(*args):
+    if len(buscar_sv.get()) > 1: 
+        buscar()
+    else:
+        treeview.change(treeview.list)
+
+
+def callback_all_buscar_sv(*args):
+    if len(buscar_sv.get()) > 1: 
+        buscar()
+    else:
+        treeview.change(treeview.list)
 
 
 # VISUAL #
@@ -163,8 +211,12 @@ cb_curso = Combobox(frame_superior, width=8, state='readonly', font=font_big)
 cb_curso.grid(row=0, column=3, sticky='e', padx=10, pady=10)
 valores_by_cbcursos(cb_curso)
 cb_curso.bind("<<ComboboxSelected>>", bind_update_treeview)
-lb_fecha = Label(frame_superior, text='',background=COLOR_DARK_BG, foreground=COLOR_FB, font=font_middle)
-lb_fecha.grid(row=0,column=4)
+lb_fecha = Label(frame_superior,
+                 text='',
+                 background=COLOR_DARK_BG,
+                 foreground=COLOR_FB,
+                 font=font_middle)
+lb_fecha.grid(row=0, column=4)
 valores_fechas()
 
 Label(frame_superior, background=COLOR_DARK_BG, text='').grid(row=0,
@@ -177,12 +229,47 @@ Label(frame_superior,
       foreground=COLOR_FB,
       font=font_big).grid(row=0, column=6)
 
-cb_horario = Combobox(frame_superior, width=18, state='readonly', font=font_small)
+cb_horario = Combobox(frame_superior,
+                      width=18,
+                      state='readonly',
+                      font=font_small)
 cb_horario.grid(row=0, column=7, sticky='e', padx=10, pady=10)
 valores_by_cbhorario(cb_horario)
 cb_horario.bind("<<ComboboxSelected>>", bind_update_treeview)
+Label(frame_superior, background=COLOR_DARK_BG, text='').grid(row=0,
+                                                              column=8,
+                                                              padx=60)
 
+# -- BUSCADOR
+fr_buscar = Frame(frame_superior, background=COLOR_SOFT_BG, padx=5, pady=5)
+fr_buscar.grid(row=0, column=9, sticky=E, padx=5)
 
+buscar_sv = StringVar()
+buscar_sv.trace('w', callback_buscar_sv)
+all_check_sv = StringVar()
+all_check_sv.set(0)
+all_check_sv.trace('w', callback_all_buscar_sv)
+
+Label(fr_buscar,
+      text='Buscar',
+      background=COLOR_SOFT_BG,
+      foreground=COLOR_FB,
+      font=font_big).grid(row=0, column=0, rowspan=2, sticky=EW, padx=20)
+e_buscar = Entry(
+    fr_buscar,
+    textvariable=buscar_sv,
+    #background=COLOR_DARK_BG,
+    #foreground=COLOR_FB,
+    width=24,
+    font=font_middle)
+e_buscar.grid(row=0, column=2, sticky=E)
+e_buscar.focus()
+ck_buscar_all = Checkbutton(fr_buscar,
+                            background=COLOR_SOFT_BG,
+                            foreground=COLOR_FB,
+                            text='Toda la base de datos',
+                            variable=all_check_sv)
+ck_buscar_all.grid(row=1, column=2, sticky=W)
 
 # - Frame de botones (lateral)
 buttons_frame = Frame(body_frame,
@@ -260,6 +347,7 @@ bt_del_curso.grid(row=0, column=1, padx=3, pady=5)
 tree_frame = Frame(body_frame)
 tree_frame.pack(expand=True, fill='both', side='right')
 
-treeview = init_multilist_matriculas(tree_frame, cb_curso.get(), cb_horario.get())
+treeview = init_multilist_matriculas(tree_frame, cb_curso.get(),
+                                     cb_horario.get())
 
 root.mainloop()
