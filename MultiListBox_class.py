@@ -2,11 +2,11 @@
 Here the TreeView widget is configured as a multi-column listbox
 with adjustable column width and column-header-click sorting.
 '''
-from tkinter import CENTER, END, EW, LEFT, W, Button, StringVar, Text, Entry, Frame, Label, Toplevel, messagebox
+from tkinter import CENTER, END, EW, LEFT, RIGHT, W, Button, StringVar, Text, Entry, Frame, Label, Toplevel, messagebox
 import tkinter as tk
 import tkinter.ttk as ttk
 import tkinter.font as tkFont
-from db_handler import actualizar_matricula, eliminar_matr_by_ci_and_curso, get_all_cat_code, get_cursos, get_horarios, get_idcurso_by_curso_year, get_last_curso_id, get_matricula_by_ci_curso, get_municipios, get_view_matriculas_by_idcurso
+from db_handler import actualizar_matricula, eliminar_matr_by_ci_and_curso, get_all_cat_code, get_cursos, get_cursos_by_ci, get_horarios, get_idcurso_by_curso_year, get_last_curso_id, get_matricula_by_ci_curso, get_municipios, get_view_matriculas_by_idcurso
 from general_constants import *
 
 
@@ -150,6 +150,8 @@ class MultiColumnListbox(object):
         self.frame_estado.grid(row=1,column=0, columnspan=2, sticky=EW)
         self.lb_estado = Label(self.frame_estado, text= '', bg=COLOR_DARK_BG, fg=COLOR_FB)
         self.lb_estado.pack(side=LEFT)
+        self.lb_estado_2 = Label(self.frame_estado, text= '', bg=COLOR_DARK_BG, fg=COLOR_FB)
+        self.lb_estado_2.pack(side=RIGHT, padx=20)
         
         self.actualizar_estado()
 
@@ -202,8 +204,16 @@ class MultiColumnListbox(object):
         idx = self.tree.index(item_selected)
         item = self.tree.item(item_selected)
         valoresItem = item['values']
+        valoresIndex = self.list[idx]
 
-        print('Se selecciono', valoresItem)
+        cursos = get_cursos_by_ci(valoresItem[1])
+        if not cursos: return
+        
+        string_cursos = ", ".join(cursos) if len(cursos)>1 else cursos[0]
+        nombre = valoresItem[0]
+        self.lb_estado_2['text'] = f'{nombre} ({string_cursos})'
+        
+            
 
     # -------------- Menu Contextual ------------
 
@@ -494,7 +504,8 @@ class MultiColumnListbox(object):
             if self.list[0][0] == '': texto_matri=''
         
         self.lb_estado.config(text=texto_matri)
-
+        
+    
 def sortby(tree, col, descending):
     """sort tree contents when a column header is clicked on"""
     # grab values to sort

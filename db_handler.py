@@ -308,6 +308,27 @@ def get_id_alumno_by_ci(ci):
     db.close()
     return id_alumno
 
+def get_cursos_by_ci(ci):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+
+    sql2 = '''
+    SELECT %s FROM %s WHERE %s=?
+    ''' % (ID_CURSO, V_MATRICULAS, CI)
+    param2 = [ci]
+
+    cursor.execute(sql2, param2)
+    fetch = cursor.fetchall()
+    db.close()
+
+    if fetch:
+        id_cursos = [row[0] for row in fetch]
+        cursos = [get_curso_by_id(id, True) for id in id_cursos]
+        return cursos
+        
+    return False
+
+
 
 def get_alumnos_for_excel(id_curso, horario):
     db = connect(DB_NAME)
