@@ -244,6 +244,54 @@ def agregar_fecha_al_horario(db: Connection):
         print(
             'Ya la tabla horario tiene la fecha de inicio y final como campos')
 
+@conexion_db
+def tabla_unidades(db:Connection):
+    sql = f'''
+    CREATE TABLE IF NOT EXISTS {T_UNIDADES} (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        {NOMBRE_UNIDAD} VARCHAR(30),
+        {TELEFONO} VARCHAR(30),
+        {DIRECCION_UNIDAD} VARCHAR(100),
+        {DATOS} VARCHAR(150))
+    '''
+    cursor = db.cursor()
+    cursor.execute(sql)
+    db.commit()
+    
+    DATOS_UNIDADES = [
+        ['1ra y 12','Calle 1ra y 12, Playa','72030791',''],
+        ['Parque Trillo','San Rafael e/ Aramburu y Soledad, Centro Habana','78793338',''],
+        ['Luyano','Czda Luyano e/ Villa Nueva y Luco, 10 de Octubre','76990850',''],
+        ['Rotonda Guanabacoa','Dolores e/ Buena Vista y Via B','77944086','']
+    ]
+    
+    try:
+        for i, unidad in enumerate(DATOS_UNIDADES):
+            sql = f'''
+            INSERT INTO {T_UNIDADES}(id,{NOMBRE_UNIDAD},{TELEFONO},{DIRECCION_UNIDAD},{DATOS})
+            VALUES (?,?,?,?,?)
+            '''
+            parm = [i+1] + unidad
+            cursor.execute(sql, parm)
+        db.commit()
+        
+        sql = f'''ALTER TABLE {T_MUNICIPIOS} 
+        ADD COLUMN [{ID_UNIDAD}] [INTEGER];'''
+        cursor.execute(sql)
+        
+        ids = [1,2,2,2,4,4,4,4,3,2,1,1,3,3,4]
+        for i in range(len(ids)):
+            sql = f'''
+            UPDATE {T_MUNICIPIOS} SET {ID_UNIDAD}=? WHERE id=?
+            '''
+            parm = [ids[i], i+1]
+            cursor.execute(sql, parm)
+            db.commit()
+        
+    except Exception as e:
+        print('no se agrego datos unidades', e)
+
+tabla_unidades()   
 
 # datos iniciales cuando no existe la DB
 if not path.exists(DB_NAME):
@@ -345,6 +393,29 @@ def get_alumnos_for_excel(id_curso, horario):
     db.close()
     return alumnos
 
+def get_unidad_my_municipio(municipio):
+    db = connect(DB_NAME)
+    cursor = db.cursor()
+    
+    sql = f'''
+    SELECT {ID_UNIDAD} FROM {T_MUNICIPIOS} WHERE {MUNICIPIO}=?
+    '''
+    parm = [municipio]
+    cursor.execute(sql,parm)
+    fetch = cursor.fetchone()
+    id_unidad = fetch[0] if fetch else 0
+    
+    sql = f'''
+    SELECT {NOMBRE_UNIDAD} FROM {T_UNIDADES} WHERE id=?
+    '''
+    parm = [id_unidad]
+    cursor.execute(sql,parm)
+    fetch = cursor.fetchone()
+    
+    unidad = fetch[0] if fetch else ''
+    db.close()
+
+    return unidad
 
 @conexion_db
 def get_municipios(db):

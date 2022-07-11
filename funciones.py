@@ -3,7 +3,7 @@ from tkinter import filedialog
 from tkinter.ttk import Combobox
 from MultiListBox_class import MultiColumnListbox
 from curso_modelo import AulaModelo, CursoModelo
-from db_handler import get_all_alumnos, get_alumnos_for_excel, get_curso_by_id, get_cursos, get_fecha_inicio_fin_by_idcurso, get_horario_by_id, get_horarios, get_id_horarios, get_idcurso_by_curso_year, get_last_curso_id, get_matr_init_by_id, get_modelo_init_by_idcurso, get_view_matriculas_by_idcurso, set_matriculas_by_id_horario_idcurso
+from db_handler import get_all_alumnos, get_alumnos_for_excel, get_curso_by_id, get_cursos, get_fecha_inicio_fin_by_idcurso, get_horario_by_id, get_horarios, get_id_horarios, get_idcurso_by_curso_year, get_last_curso_id, get_matr_init_by_id, get_modelo_init_by_idcurso, get_unidad_my_municipio, get_view_matriculas_by_idcurso, set_matriculas_by_id_horario_idcurso
 from cmd_abrir_carpeta_explorer import abrirCarpeta
 from db_constantes import *
 
@@ -168,7 +168,9 @@ def alumnos_para_aula(lista_bruta:list[list]):
             if tel == '': tel = tels[0]
         
         # agregamos a la nueva fila estos datos, falta la unidad, segun municipio
-        lista_final.append([nomb,ci,tel,''])
+        unidad = get_unidad_my_municipio(mun)
+        
+        lista_final.append([nomb,ci,tel,unidad])
     return lista_final 
     
 def create_excel_by_curso(curso:str):

@@ -18,6 +18,9 @@ DATOS = 'datos'
 # T_HORARIOS
 HORARIO = 'horario'
 
+# T_MUNICIPIOS
+ID_UNIDAD = 'id_unidad'
+
 # T_CURSOS
 NOMBRE_CURSO = 'nombre_curso'
 MATRICULA_INIT = 'matricula_init'
@@ -25,9 +28,6 @@ YEAR = 'year'
 FECHA_INICIAL = 'fecha_inicial'
 FECHA_FINAL = 'fecha_final'
 MODELO_INIT = 'modelo_init'
-
-# T_HORARIOS
-HORARIO = 'horario'
 
 # T_CATEGORIA_LIC
 NOMBRE_CAT = 'nombre_cat'
@@ -52,6 +52,11 @@ KEY_MATRICULAS = [
     DATOS
 ]
 
+T_UNIDADES = 't_unidades'
+NOMBRE_UNIDAD = 'nombre_unidad'
+#TELEFONO
+DIRECCION_UNIDAD = 'direccion_unidad'
+#DATOS
 
 # ---- VIEWS -------
 
