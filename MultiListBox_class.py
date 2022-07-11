@@ -266,13 +266,13 @@ class MultiColumnListbox(object):
 
             def aceptar():
                 guardar.clear()
-                guardar.append(e_name.get())
-                guardar.append(e_ci.get())
-                guardar.append(e_municipio.get())
-                guardar.append(e_tel.get())
-                guardar.append(e_horario.get())
-                guardar.append(e_datos.get())
-                guardar.append(e_categoria.get())
+                guardar.append(e_name.get().strip())
+                guardar.append(e_ci.get().strip())
+                guardar.append(e_municipio.get().strip())
+                guardar.append(e_tel.get().strip())
+                guardar.append(e_horario.get().strip())
+                guardar.append(e_datos.get().strip())
+                guardar.append(e_categoria.get().strip())
 
                 ci_data_dupl = ci_duplicado_en_matricula()
 

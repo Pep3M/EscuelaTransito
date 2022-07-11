@@ -94,13 +94,13 @@ class Form_new_matric:
 
     def aceptar(self):
         self.guardar.clear()
-        self.guardar.append(self.e_name.get())
-        self.guardar.append(self.e_ci.get())
-        self.guardar.append(self.e_municipio.get())
-        self.guardar.append(self.e_tel.get())
-        self.guardar.append(self.e_horario.get())
-        self.guardar.append(self.e_datos.get())
-        self.guardar.append(self.e_categoria.get())
+        self.guardar.append(self.e_name.get().strip())
+        self.guardar.append(self.e_ci.get().strip())
+        self.guardar.append(self.e_municipio.get().strip())
+        self.guardar.append(self.e_tel.get().strip())
+        self.guardar.append(self.e_horario.get().strip())
+        self.guardar.append(self.e_datos.get().strip())
+        self.guardar.append(self.e_categoria.get().strip())
 
         ci_data_dupl = self.ci_duplicado_en_matricula()
         if not self.check_required_fields():
