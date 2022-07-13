@@ -18,7 +18,7 @@ class CursoModelo():
 
     def agregar_matricula(self, nombre:str, dni:str=''):
         # buscamos una celda vacia para agregar la matricula
-        for i in range(9,36):
+        for i in range(9,44):
             
             if self.ws[f'B{i}'].value == None:
                 # agregamos el nombre
@@ -27,8 +27,10 @@ class CursoModelo():
                 # agregamos dni
                 if not dni == '':    
                     for col in range(3,13):
-                        self.ws[f'{get_column_letter(col)}{i}'].value = dni[col-3]
-                    self.ws[f'S{i}'].value = dni[10]
+                        try: self.ws[f'{get_column_letter(col)}{i}'].value = dni[col-3]
+                        except: pass
+                    try: self.ws[f'S{i}'].value = dni[10]
+                    except:pass
                 
                 break
 
@@ -61,7 +63,7 @@ class AulaModelo():
 
     def agregar_matricula(self, nombre:str, dni:str='', tel='', unidad=''):
         # buscamos una celda vacia para agregar la matricula
-        for i in range(9,36):
+        for i in range(9,44):
             
             if self.ws[f'B{i}'].value == None:
                 # agregamos el nombre
@@ -70,7 +72,8 @@ class AulaModelo():
                 # agregamos dni
                 if not dni == '':    
                     for col in range(3,14):
-                        self.ws[f'{get_column_letter(col)}{i}'].value = dni[col-3]
+                        try: self.ws[f'{get_column_letter(col)}{i}'].value = dni[col-3]
+                        except: pass
                 
                 #tel
                 if not tel == '':
@@ -105,6 +108,63 @@ def crear_curso_prueba():
 
     # pasamos un lote de matriculas
     lista = [
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
+        ['juan lopez AGUIRRE', '91011627921'],
+        ['Alberto Gomez', '81061327921'],
+        ['Luis Abreu', '97123127921'],
         ['juan lopez AGUIRRE', '91011627921'],
         ['Alberto Gomez', '81061327921'],
         ['Luis Abreu', '97123127921'],
