@@ -430,22 +430,21 @@ def get_municipios(db):
 @conexion_db
 def get_horarios(db: Connection):
     cursor = db.cursor()
-    sql = 'SELECT %s FROM %s;' % (HORARIO, T_HORARIOS)
+    sql = f'SELECT * FROM {T_HORARIOS} ORDER BY {ORDEN} ASC;'
     cursor.execute(sql)
     elementos = cursor.fetchall()
-    horarios = [elemento[0] for elemento in elementos]
+    horarios = [elemento[1] for elemento in elementos]
     return horarios
 
 
 @conexion_db
 def get_id_horarios(db: Connection):
     cursor = db.cursor()
-    sql = 'SELECT id FROM %s;' % (T_HORARIOS)
+    sql = f'SELECT id, {ORDEN} FROM {T_HORARIOS} ORDER BY {ORDEN};'
     cursor.execute(sql)
     elementos = cursor.fetchall()
     id_horarios = [elemento[0] for elemento in elementos]
     return id_horarios
-
 
 def get_matr_init_by_id(id_curso) -> int:
     db = connect(DB_NAME)

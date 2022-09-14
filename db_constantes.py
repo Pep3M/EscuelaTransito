@@ -17,6 +17,7 @@ DATOS = 'datos'
 
 # T_HORARIOS
 HORARIO = 'horario'
+ORDEN = 'orden'
 
 # T_MUNICIPIOS
 ID_UNIDAD = 'id_unidad'
